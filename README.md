@@ -32,18 +32,18 @@ skyent websocket网关服务
 #### ├── db_server
 #### │   ├── database
 #### │   │   └── database.lua
-#### │   ├── db_logic.lua
-#### │   ├── db_manager.lua
-#### │   └── db_server.lua
+#### │   ├── db_server.lua
+#### │   ├── logic.lua
+#### │   └── manager.lua
 #### ├── gate_server
 #### │   ├── agent.lua
 #### │   ├── backend
 #### │   │   └── backend.lua
 #### │   └── gate_server.lua
 #### ├── logon_server
-#### │   ├── logon_logic.lua
-#### │   ├── logon_manager.lua
-#### │   └── logon_server.lua
+#### │   ├── logic.lua
+#### │   ├── logon_server.lua
+#### │   └── manager.lua
 #### ├── main_center.lua
 #### ├── main_client.lua
 #### ├── main_gate.lua
@@ -55,13 +55,15 @@ skyent websocket网关服务
 #### │   └── proto_map.lua
 #### ├── protos
 #### │   ├── build.sh
+#### │   ├── chat.pb
+#### │   ├── chat.proto
 #### │   ├── lobby.pb
 #### │   ├── lobby.proto
 #### │   ├── service.pb
 #### │   └── service.proto
 #### ├── redis_server
-#### │   ├── redis_logic.lua
-#### │   ├── redis_manager.lua
+#### │   ├── logic.lua
+#### │   ├── manager.lua
 #### │   └── redis_server.lua
 #### ├── skycommon
 #### │   └── helper.lua
