@@ -6,7 +6,7 @@ require("skynet.manager")
 require("common.export")
 require("service_config.define")
 require("proto_map.proto_map")
-require("proto_map.sp")
+require("proto_map.proto_func")
 
 local command = {
     scheme = "ws",
@@ -20,8 +20,8 @@ local msgs_switch = {
         name = "MDM_CORE",
         [0x0001] = {
             name = "SUB_CORE_REGISTER",
-            fn = function(conn, pk)
-                local data = proto_map.decode_AckRegistService(pk:data())
+            fn = function(pk)
+                local data = functor.decode_AckRegistService(pk:data())
                 dump(data, "AckRegistService")
                 if data.result == 0 then
                 end
@@ -57,23 +57,21 @@ function command.test()
             password = "123456",
         })
         
-        command.client:send(LOGON_CMD.MDM_LOGON, LOGON_CMD.SUB.LOGON, reqLogin, function(conn, pk)
+        command.client:send(LOGON_CMD.MDM_LOGON, LOGON_CMD.SUB.LOGON, reqLogin, function(pk)
             local data = functor.decode_AckLogin(pk:data())
             dump(data, "AckLogin")
         end)
         local chatMessage = functor.encode_ChatMessage(
-            {
-                from = 10,
-                to = 11,
-                content = "hello"
-            })
-            command.client:send(LOGON_CMD.MDM_LOGON, LOGON_CMD.SUB.CHAT, chatMessage, function(conn, pk)
-                local data = functor.decode_AckChatMessage(pk:data())
-                dump(data, "AckChatMessage")
-            end)
-
+        {
+            from = 10,
+            to = 11,
+            content = "hello"
+        })
+        command.client:send(LOGON_CMD.MDM_LOGON, LOGON_CMD.SUB.CHAT, chatMessage, function(pk)
+            local data = functor.decode_AckChatMessage(pk:data())
+            dump(data, "AckChatMessage")
+        end)
         skynet.sleep(100)
-
     end
 end
 
@@ -104,17 +102,16 @@ function command.alive()
     )
 end
 
-function command.message(conn, pk)
+function command.message(pk)
     local mid = pk:mid()
     local sid = pk:sid()
     local msgmap = msgs_switch[mid][sid]
     if msgmap then
         if msgmap.fn ~= nil then
-            skynet.fork(msgmap.fn, self, pk)
-        -- msgmap.fn(self, pk)
+            skynet.fork(msgmap.fn, pk)
         end
     else
-        skynet.error("<: pk", "mid=" .. pk:mid() .. ", sid=" .. pk:sid() .. "命令未实现")
+        skynet.error("<: pk", "mid=" .. mid .. ", sid=" .. sid .. "命令未实现")
     end
 end
 

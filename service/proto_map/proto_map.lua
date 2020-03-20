@@ -1,6 +1,6 @@
 require("service_config.define")
 require("service_config.cmd")
-require("proto_map.sp")
+require("proto_map.proto_func")
 
 proto_map = proto_map or {
     [LOGON_CMD.MDM_LOGON] = {

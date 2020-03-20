@@ -73,7 +73,7 @@ function WSClient:connect(scheme, host, path, heartbeattime)
                             0x0000,
                             0x0000,
                             nil,
-                            function(conn, data)
+                            function(data)
                                 skynet.error("ws心跳", os.date("%Y-%m-%d %H:%M:%S", os.time()))
                             end
                         )
@@ -141,7 +141,6 @@ function WSClient:send(mid, sid, content, fn)
         return 1
     end
     self._websocket.write(self._wsid, pk:data(), "binary", 0x02)
-
     return 0
 end
 
@@ -155,7 +154,7 @@ function WSClient:reset()
 end
 
 function WSClient:handleMessage(fn)
-    self._on_message = fn or function(conn, pk)
+    self._on_message = fn or function(pk)
         skynet.error("<: ", "mid=" .. pk:mid(), "sid=" .. pk:sid(), "clientId=" .. pk:clientId(), "默认·消息·函数")
     end
     return 0
@@ -197,15 +196,15 @@ function WSClient:loop_read()
         if mids then
             local sids = mids[sid]
             if sids and sids.fn then
-                skynet.fork(sids.fn, self, pk)
+                skynet.fork(sids.fn, pk)
             else
                 if self._onMessage then
-                    skynet.fork(self._onMessage, self, pk)
+                    skynet.fork(self._on_message, pk)
                 end
             end
         else
             if self._onMessage then
-                skynet.fork(self._onMessage, self, pk)
+                skynet.fork(self._on_message, pk)
             end
         end
     end
