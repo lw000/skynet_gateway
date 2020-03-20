@@ -1,7 +1,7 @@
 local skynet = require("skynet")
 local logic = require("center_server.logic")
 local skyhelper = require("skycommon.helper")
-local forwardmap = require("center_server.route_map")
+local routemap = require("center_server.routemap")
 require("common.export")
 require("service_config.define")
 
@@ -26,14 +26,14 @@ function manager.dispatch(head, content)
 
     -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
 
-    local forward = forwardmap[head.mid]
-    -- dump(forward, "forward")
-    if not forward then
+    local route = routemap[head.mid]
+    -- dump(route, "route")
+    if not route then
         local errmsg = "unknown " .. manager.servername .. "mid command" 
         skynet.error(errmsg)
         return nil, errmsg 
     end
-    return skyhelper.callLocal(forward.TO, "message", head, content)
+    return skyhelper.callLocal(route.to, "message", head, content)
 end
 
 return manager

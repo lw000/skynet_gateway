@@ -11,27 +11,17 @@ local logic = {
 
 -- 请求登录
 function logic.onReqLogin(head, content)
-    assert(head ~= nil)
-    assert(content ~= nil)
+    dump(content, "reqLogin")
+    return 0, {
+        result = 1,
+        errmsg = "登录成功",
+    }
+end
 
-    if head == nil then
-        return 1, "head is nil"
-    end
-
-    if content == nil then
-        return 2, "content is nil"
-    end
-
-    local ack = proto_map.decode_ReqLogin(content.data)
-    dump(ack, "ack")
-
-    local ack = proto_map.encode_AckLogin(
-        {
-            result = 1,
-            errmsg = "登录成功",
-        }
-    )
-    return 0, ack
+-- 聊天信息
+function logic.onChat(head, content)
+    dump(content, "chatMessage")
+    return 0, {result = 1}
 end
 
 return logic

@@ -18,13 +18,14 @@ function command.START(port)
     command.port = port
     command.run()
 
-    skynet.error("gate_server start")
+    skynet.error(command.servername .. " start")
     return 0
 end
 
 function command.STOP()
     socket.close(command.sfd)
-    skynet.error("gate_server exit")
+
+    skynet.error(command.servername .. " stop")
 end
 
 function command.run()

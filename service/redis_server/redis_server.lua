@@ -43,6 +43,8 @@ function command.START(conf)
 			end
 		end
 	)
+
+	skynet.error(command.servername .. " start")
     return 0
 end
 
@@ -54,6 +56,7 @@ function command.STOP()
 	command.redisConn:disconnect()
 	command.redisdb = nil
 
+	skynet.error(command.servername .. " stop")
     return 0
 end
 

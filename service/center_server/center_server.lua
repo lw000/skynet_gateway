@@ -16,19 +16,16 @@ function command.START(port)
 
     centermgr.start(command.servername)
 
-    skynet.error("center_server start")
-
+    skynet.error(command.servername .. " start")
     return 0
 end
 
 function command.STOP()
     centermgr.stop()
-    skynet.error("center_server exit")
+    skynet.error(command.servername .. " stop")
 end
 
 function command.MESSAGE(head, content)
-    assert(head ~= nil and type(head)== "table")
-    assert(content ~= nil and type(content)== "table")
 	return centermgr.dispatch(head, content)
 end
 

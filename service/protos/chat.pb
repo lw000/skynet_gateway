@@ -1,10 +1,10 @@
 
-Å
+â
 
-chat.protochat"C
+chat.protochat"K
 ChatMessage
 from (Rfrom
-to (Rto
-msg (	Rmsg"(
+to (Rto
+content (	Rcontent"(
 AckChatMessage
 result (Rresult

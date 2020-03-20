@@ -41,7 +41,8 @@ function command.START(conf)
     command.running = true
 
     dbmgr.start(command.servername)
-
+    
+    skynet.error(command.servername .. " start")
     return 0
 end
 
@@ -53,7 +54,8 @@ function command.STOP()
     
     database.close(command.dbconn)
     command.dbconn = nil
-    
+
+    skynet.error(command.servername .. " stop")
     return 0
 end
 

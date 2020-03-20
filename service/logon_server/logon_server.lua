@@ -19,12 +19,15 @@ function command.START()
 
 	logonmgr.start(command.servername)
 
+    skynet.error(command.servername .. " start")
     return 0
 end
 
 function command.STOP()
 	command.running = false
-	logonmgr.stop()
+    logonmgr.stop()
+    
+    skynet.error(command.servername .. " stop")
     return 0
 end
 

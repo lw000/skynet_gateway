@@ -14,6 +14,8 @@ require("common.export")
 
 local function onStart()
     skynet.newservice("debug_console", conf.debugPort)
+
+    -- 中心F
     local center_server = skynet.newservice("center_server")
     local ret, err = skynet.call(center_server, "lua", "start")
     if err then
@@ -21,6 +23,7 @@ local function onStart()
         return
     end
 
+    -- 网关服
     local gate_server = skynet.newservice("gate_server")
     local ret, err = skynet.call(gate_server, "lua", "start", conf.gatePort)
     if err then
@@ -28,6 +31,7 @@ local function onStart()
         return
     end
 
+    -- 登录服务
     local logon_server = skynet.newservice("logon_server")
     local ret, err = skynet.call(logon_server, "lua", "start")
     if err then
@@ -35,7 +39,8 @@ local function onStart()
         return
     end
 
-    for i = 0, 100 do
+    -- 模拟客户端
+    for i = 0, 0 do
         skynet.sleep(10)
         local client_id = skynet.newservice("ws_client")
         skynet.send(client_id, "lua", "start", "ws", string.format("%s:%d", "127.0.0.1", conf.gatePort))

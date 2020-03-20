@@ -2,6 +2,7 @@ local skynet = require("skynet")
 local logic = require("logon_server.logic")
 require("common.export")
 require("service_config.define")
+require("proto_map.proto_map")
 
 local manager = {
     servername = nil,   -- 服务名字
@@ -18,6 +19,7 @@ function manager.start(servername)
     end
     
     manager.methods[LOGON_CMD.SUB.LOGON] = {func=logic.onReqLogin, desc="请求登录"}
+    manager.methods[LOGON_CMD.SUB.CHAT] = {func=logic.onChat, desc="聊天信息"}
     -- dump(manager.methods, manager.servername .. ".command.methods")
 end
 
@@ -48,7 +50,26 @@ function manager.dispatch(head, content)
         skynet.error(errmsg)
         return nil, errmsg 
     end
-    return method.func(head, content)
+
+    local logonMethod = proto_map[LOGON_CMD.MDM_LOGON]
+    -- dump(logonMethod, "logonMethod")
+
+    -- 解包接口
+    local cmd = logonMethod[head.sid]
+    -- dump(cmd, "cmd")
+
+    local req = cmd.req(content.data)
+    -- dump(req, "req")
+
+    local ret, result = method.func(head, req)
+    -- dump(result, "result")
+    if 0 == ret then
+        -- body
+    end
+    -- 封包接口
+    local ack = cmd.ack(result)
+
+    return ret, ack
 end
 
 return manager

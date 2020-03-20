@@ -6,6 +6,7 @@ require("skynet.manager")
 require("common.export")
 require("service_config.define")
 require("proto_map.proto_map")
+require("proto_map.sp")
 
 local command = {
     scheme = "ws",
@@ -21,11 +22,8 @@ local msgs_switch = {
             name = "SUB_CORE_REGISTER",
             fn = function(conn, pk)
                 local data = proto_map.decode_AckRegistService(pk:data())
+                dump(data, "AckRegistService")
                 if data.result == 0 then
-                    skynet.error(
-                        "服务注册成功",
-                        "result=" .. data.result .. ", serverId=" .. data.serverId .. ", errmsg=" .. data.errmsg
-                    )
                 end
             end
         }
@@ -52,19 +50,27 @@ function command.START(scheme, host)
 end
 
 function command.test()
-    while(command.running) do
-        local content =
-        proto_map.encode_ReqLogin(
+    while (command.running) do
+        local reqLogin = functor.encode_ReqLogin(
         {
             account = "levi",
             password = "123456",
         })
-
-        local on_cb = function(conn, pk)
-            local data = proto_map.decode_AckLogin(pk:data())
+        
+        command.client:send(LOGON_CMD.MDM_LOGON, LOGON_CMD.SUB.LOGON, reqLogin, function(conn, pk)
+            local data = functor.decode_AckLogin(pk:data())
             dump(data, "AckLogin")
-        end
-        command.client:send(LOGON_CMD.MDM_LOGON, LOGON_CMD.SUB.LOGON, content, on_cb)
+        end)
+        local chatMessage = functor.encode_ChatMessage(
+            {
+                from = 10,
+                to = 11,
+                content = "hello"
+            })
+            command.client:send(LOGON_CMD.MDM_LOGON, LOGON_CMD.SUB.CHAT, chatMessage, function(conn, pk)
+                local data = functor.decode_AckChatMessage(pk:data())
+                dump(data, "AckChatMessage")
+            end)
 
         skynet.sleep(100)
 
