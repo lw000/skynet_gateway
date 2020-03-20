@@ -3,11 +3,11 @@ local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
 require("skynet.manager")
-require("service_config.define")
+require("service_config.type")
 
 local command = {
-    servertype = SERVICE_CONF.GATE.TYPE,
-    servername = SERVICE_CONF.GATE.NAME,
+    servertype = SERVICE_TYPE.GATE.ID,
+    servername = SERVICE_TYPE.GATE.NAME,
     sfd = 0,
     port = 8080,
     protocol = "ws",

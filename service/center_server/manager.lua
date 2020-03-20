@@ -3,14 +3,15 @@ local logic = require("center_server.logic")
 local skyhelper = require("skycommon.helper")
 local routemap = require("center_server.routemap")
 require("common.export")
-require("service_config.define")
+require("service_config.type")
 
 local manager = {
     servername = nil,   -- 服务名字
 }
 
 function manager.start(servername)
-    assert(servername ~= nil) 
+    assert(servername ~= nil)
+    assert(type(servername) == "string")
     manager.servername = servername
 end
 

@@ -4,7 +4,7 @@ local websocket = require("http.websocket")
 local packet = require("network.packet")
 local skyhelper = require("skycommon.helper")
 require("skynet.manager")
-require("service_config.define")
+require("service_config.type")
 require("proto_map.proto_map")
 
 local handle = {
@@ -59,7 +59,7 @@ function handle.message(sock_id, msg)
     }
 
     local forward_func = function(sock_id, head, content)
-        local ret, data = skyhelper.callLocal(SERVICE_CONF.CENTER.NAME, "message", head, content)
+        local ret, data = skyhelper.callLocal(SERVICE_TYPE.CENTER.NAME, "message", head, content)
         if 0 == ret then
             handle.send(sock_id, head.mid, head.sid, head.clientId, data)
         else

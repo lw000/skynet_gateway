@@ -1,7 +1,7 @@
 local skynet = require("skynet")
 local logic = require("redis_server.logic")
 require("common.export")
-require("service_config.define")
+require("service_config.type")
 
 local manager = {
     servername = nil,   -- 服务名字
@@ -9,7 +9,8 @@ local manager = {
 }
 
 function manager.start(servername)
-    assert(servername ~= nil) 
+    assert(servername ~= nil)
+    assert(type(servername) == "string")
     manager.servername = servername
 
     -- 注册业务处理接口

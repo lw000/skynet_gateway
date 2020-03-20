@@ -2,7 +2,7 @@ local skynet = require("skynet")
 local cjson = require("cjson")
 local skyhelper = require("skycommon.helper")
 require("common.export")
-require("service_config.define")
+require("service_config.type")
 require("proto_map.proto_map")
 
 local logic = {

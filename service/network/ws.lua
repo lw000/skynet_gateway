@@ -179,19 +179,24 @@ function WSClient:loop_read()
         local pk = packet:new()
         pk:unpack(resp)
 
+        local mid = pk:mid()
+        local sid = pk:sid()
+        local ver = pk:ver()
+        local checkCode = pk:checkCode()
+        local clientId = pk:clientId()
+
         if self._debug then
             skynet.error(
-                "<: client recv",
-                "ver=" .. pk:ver(),
-                "mid=" .. pk:mid(),
-                "sid=" .. pk:sid(),
-                "checkCode=" .. pk:checkCode(),
-                "clientId=" .. pk:clientId(),
+                "<: wsclient",
+                "ver=" .. ver,
+                "mid=" .. mid,
+                "sid=" .. sid,
+                "checkCode=" .. checkCode,
+                "clientId=" .. clientId,
                 "dataLen=" .. string.len(pk:data())
             )
         end
-        local mid = pk:mid()
-        local sid = pk:sid()
+
         local mids = self._msgswitch[mid]
         if mids then
             local sids = mids[sid]
@@ -211,13 +216,13 @@ function WSClient:loop_read()
 end
 
 function WSClient:dubug(debug)
-    assert(debug ~= nil and type(debug) == "boolean")
+    assert(debug ~= nil)
+    assert(type(debug) == "boolean")
     self._debug = debug
 end
 
 function WSClient:set_serverId(serverId)
     self._serverId = serverId
-    print(string.format("serverId=%d", self._serverId))
 end
 
 function WSClient:serverId()

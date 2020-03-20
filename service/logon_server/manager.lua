@@ -1,7 +1,7 @@
 local skynet = require("skynet")
 local logic = require("logon_server.logic")
 require("common.export")
-require("service_config.define")
+require("service_config.type")
 require("proto_map.proto_map")
 
 local manager = {
@@ -10,7 +10,8 @@ local manager = {
 }
 
 function manager.start(servername)
-    assert(servername ~= nil) 
+    assert(servername ~= nil)
+    assert(type(servername) == "string")
     manager.servername = servername
 
     -- 注册业务处理接口

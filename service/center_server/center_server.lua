@@ -4,11 +4,11 @@ local socket = require("skynet.socket")
 local service = require("skynet.service")
 local centermgr = require("center_server.manager")
 require("skynet.manager")
-require("service_config.define")
+require("service_config.type")
 
 local command = {
-    servertype = SERVICE_CONF.CENTER.TYPE,
-    servername = SERVICE_CONF.CENTER.NAME, 
+    servertype = SERVICE_TYPE.CENTER.ID,
+    servername = SERVICE_TYPE.CENTER.NAME, 
 }
 
 function command.START(port)

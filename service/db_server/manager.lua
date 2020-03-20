@@ -1,7 +1,7 @@
 local skynet = require("skynet")
 local logic = require("db_server.logic")
 require("common.export")
-require("service_config.define")
+require("service_config.type")
 
 local manager = {
     methods = nil,   -- 业务处理接口映射表
@@ -9,7 +9,8 @@ local manager = {
 }
 
 function manager.start(servername)
-    assert(servername ~= nil) 
+    assert(servername ~= nil)
+    assert(type(servername) == "string")
     manager.servername = servername
 
     if manager.methods == nil then

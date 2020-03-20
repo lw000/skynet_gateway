@@ -1,4 +1,4 @@
-require("service_config.define")
+require("service_config.type")
 require("service_config.cmd")
 require("proto_map.proto_func")
 

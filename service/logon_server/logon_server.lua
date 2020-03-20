@@ -4,11 +4,11 @@ local service = require("skynet.service")
 local logonmgr = require("logon_server.manager")
 require("skynet.manager")
 require("common.export")
-require("service_config.define")
+require("service_config.type")
 
 local command = {
-	servertype = SERVICE_CONF.LOGON.TYPE, 	-- 服务类型
-	servername = SERVICE_CONF.LOGON.NAME,  	-- 服务名
+	servertype = SERVICE_TYPE.LOGON.ID, 	-- 服务类型
+	servername = SERVICE_TYPE.LOGON.NAME,  	-- 服务名
 	running = false,						-- 服务器状态
 }
 

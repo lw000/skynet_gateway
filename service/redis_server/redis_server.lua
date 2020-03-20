@@ -5,11 +5,11 @@ local redis = require("skynet.db.redis")
 local redismgr = require("redis_server.manager")
 require("skynet.manager")
 require("common.export")
-require("service_config.define")
+require("service_config.type")
 
 local command = {
-	servertype = SERVICE_CONF.REDIS.TYPE, 	-- 服务类型
-	servername = SERVICE_CONF.REDIS.NAME,  	-- 服务名
+	servertype = SERVICE_TYPE.REDIS.ID, 	-- 服务类型
+	servername = SERVICE_TYPE.REDIS.NAME,  	-- 服务名
 	running = false,					-- 服务器状态
 	redisConn = nil,					-- redis连接
 	syncInterval = 30, 					-- 同步DB时间（单位·秒）

@@ -5,15 +5,15 @@ local database = require("db_server.database.database")
 local dbmgr = require("db_server.manager")
 require("skynet.manager")
 require("common.export")
-require("service_config.define")
+require("service_config.type")
 
 --[[
     db数据库服务
 ]]
 
 local command = {
-    servertype = SERVICE_CONF.DB.TYPE,   -- 服务类型
-    servername = SERVICE_CONF.DB.NAME,   -- 服务名
+    servertype = SERVICE_TYPE.DB.ID,   -- 服务类型
+    servername = SERVICE_TYPE.DB.NAME,   -- 服务名
     running = false,                -- 服务器状态
     dbconn = nil,                   -- db连接
     conf = nil,                     -- 数据库配置
