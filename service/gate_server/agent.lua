@@ -46,6 +46,11 @@ function handle.message(sock_id, msg)
         skynet.error("<: agent message","mid=" .. mid,"sid=" .. sid,"checkCode=" .. checkCode,"clientId=" .. clientId,"len=" .. string.len(pk:data()))
     end
 
+    -- 心跳消息处理
+    if mid == 0 and sid == 0 then
+        return
+    end
+
     local head = {
         mid = pk:mid(),
         sid = pk:sid(),

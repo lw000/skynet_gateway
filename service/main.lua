@@ -40,11 +40,11 @@ local function onStart()
     end
 
     -- 模拟客户端
-    for i = 0, 1000 do
-        skynet.sleep(10)
-        local client_id = skynet.newservice("ws_client")
-        skynet.send(client_id, "lua", "start", "ws", string.format("%s:%d", "127.0.0.1", conf.gatePort))
-    end
+    -- for i = 0, 500 do
+    --     skynet.sleep(10)
+    --     local client_id = skynet.newservice("ws_client")
+    --     skynet.send(client_id, "lua", "start", "ws", string.format("%s:%d", "127.0.0.1", conf.gatePort))
+    -- end
     
     skynet.exit()
 end
