@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+package Tws;
+
+//请求注册服务
+message ReqRegService {
+    optional int32 serverId = 1;       //服务器ID
+    optional int32 svrType = 2;        //服务器类型
+    optional string host = 3;          //服务器地址
+    optional int32 port = 4;           //服务器类型
+    optional int32 roomId = 5;         //房间ID
+}
+
+//响应注册服务
+message AckRegService {
+    optional sint32 result = 1;      //操作结果: 0-成功; 非0-失败
+    optional int32 serverId = 2;	//服务器ID
+    optional string errmsg = 3;      //描述消息
+}

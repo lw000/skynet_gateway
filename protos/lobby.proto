@@ -1,0 +1,15 @@
+syntax = "proto2";
+
+package lobby;
+
+// 请求登录
+message ReqLogin {
+    optional string account = 1;       // 账号
+    optional string password = 2;      // 密码
+}
+
+// 响应登录
+message AckLogin {
+    optional sint32 result = 1;      // 操作结果: 0-成功; 非0-失败
+    optional string errmsg = 2;      // 描述消息
+}
