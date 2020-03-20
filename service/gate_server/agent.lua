@@ -98,11 +98,11 @@ function handle.send(sock_id, mid, sid, clientid, content)
     return 0
 end
 
-skynet.init(
-    function()
-        skynet.error("agent init")
-    end
-)
+-- skynet.init(
+--     function()
+--         skynet.error("agent init")
+--     end
+-- )
 
 local function dispatch()
     skynet.dispatch(

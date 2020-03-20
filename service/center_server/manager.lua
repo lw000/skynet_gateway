@@ -20,8 +20,6 @@ function manager.stop()
 end
 
 function manager.dispatch(head, content)
-    assert(head ~= nil and type(head)== "table")
-    assert(content ~= nil and type(content)== "table")
     assert(head.mid ~= nil and head.mid >= 0)
     assert(head.mid ~= nil and head.sid >= 0)
 
@@ -30,7 +28,7 @@ function manager.dispatch(head, content)
     local route = routemap[head.mid]
     -- dump(route, "route")
     if not route then
-        local errmsg = "unknown " .. manager.servername .. "mid command" 
+        local errmsg = "unknown " .. manager.servername .. " mid command" 
         skynet.error(errmsg)
         return nil, errmsg 
     end

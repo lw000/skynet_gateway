@@ -68,7 +68,7 @@ local function registerFiles(...)
     local args = {...}
     for i = 1, #args do
         pb.register_file(args[i])
-        print("register protobuf [" .. args[i] .. "]")
+        -- print("register protobuf [" .. args[i] .. "]")
     end
 end
 

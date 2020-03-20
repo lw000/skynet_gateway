@@ -59,7 +59,7 @@ function command.test()
         
         command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.LOGON, reqLogin, function(pk)
             local data = functor.decode_AckLogin(pk:data())
-            dump(data, "AckLogin")
+            -- dump(data, "AckLogin")
         end)
 
         local chatMessage = functor.encode_ChatMessage(
@@ -70,7 +70,7 @@ function command.test()
         })
         command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.CHAT, chatMessage, function(pk)
             local data = functor.decode_AckChatMessage(pk:data())
-            dump(data, "AckChatMessage")
+            -- dump(data, "AckChatMessage")
         end)
 
         skynet.sleep(100)
@@ -121,11 +121,11 @@ function command.error(err)
     skynet.error(err)
 end
 
-skynet.init(
-    function()
-        skynet.error("ws_client init")
-    end
-)
+-- skynet.init(
+--     function()
+--         skynet.error("ws_client init")
+--     end
+-- )
 
 local function dispatch()
     skynet.dispatch(
