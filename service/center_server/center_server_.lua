@@ -3,7 +3,7 @@ local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
 require("skynet.manager")
-require("core.define")
+require("service_config.define")
 
 local command = {
     servertype = SERVICE_CONF.CENTER.TYPE,

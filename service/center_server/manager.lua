@@ -3,7 +3,7 @@ local logic = require("center_server.logic")
 local skyhelper = require("skycommon.helper")
 local forwardmap = require("center_server.route_map")
 require("common.export")
-require("core.define")
+require("service_config.define")
 
 local manager = {
     servername = nil,   -- 服务名字

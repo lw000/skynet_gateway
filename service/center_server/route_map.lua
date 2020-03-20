@@ -1,4 +1,4 @@
-require("core.define")
+require("service_config.define")
 
 -- 中心F路由转发映射表
 local RouteForwardMap = 

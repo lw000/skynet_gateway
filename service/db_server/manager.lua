@@ -1,7 +1,7 @@
 local skynet = require("skynet")
 local logic = require("db_server.logic")
 require("common.export")
-require("core.define")
+require("service_config.define")
 
 local manager = {
     methods = nil,   -- 业务处理接口映射表

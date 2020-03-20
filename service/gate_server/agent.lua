@@ -4,7 +4,7 @@ local websocket = require("http.websocket")
 local packet = require("network.packet")
 local skyhelper = require("skycommon.helper")
 require("skynet.manager")
-require("core.define")
+require("service_config.define")
 require("proto_map.proto_map")
 
 local handle = {

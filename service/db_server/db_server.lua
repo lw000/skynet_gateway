@@ -5,7 +5,7 @@ local database = require("db_server.database.database")
 local dbmgr = require("db_server.manager")
 require("skynet.manager")
 require("common.export")
-require("core.define")
+require("service_config.define")
 
 --[[
     db数据库服务

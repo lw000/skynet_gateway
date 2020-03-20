@@ -1,7 +1,7 @@
 local skynet = require("skynet")
 local logic = require("redis_server.logic")
 require("common.export")
-require("core.define")
+require("service_config.define")
 
 local manager = {
     servername = nil,   -- 服务名字

@@ -5,7 +5,7 @@ local redis = require("skynet.db.redis")
 local redismgr = require("redis_server.manager")
 require("skynet.manager")
 require("common.export")
-require("core.define")
+require("service_config.define")
 
 local command = {
 	servertype = SERVICE_CONF.REDIS.TYPE, 	-- 服务类型

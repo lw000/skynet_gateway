@@ -4,7 +4,7 @@ local service = require("skynet.service")
 local ws = require("network.ws")
 require("skynet.manager")
 require("common.export")
-require("core.define")
+require("service_config.define")
 require("proto_map.proto_map")
 
 local command = {

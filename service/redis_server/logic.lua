@@ -2,7 +2,7 @@ local skynet = require("skynet")
 local cjson = require("cjson")
 local skyhelper = require("skycommon.helper")
 require("common.export")
-require("core.define")
+require("service_config.define")
 
 local rediskey_web_server = "web_server"
 
