@@ -29,46 +29,34 @@ function manager.stop()
 end
 
 function manager.dispatch(head, content)
-    assert(head ~= nil and type(head)== "table")
-    assert(content ~= nil and type(content)== "table")
-    assert(head.mid ~= nil and head.mid >= 0)
-    assert(head.mid ~= nil and head.sid >= 0)
-    
+  
     -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
-
-    if head.mid ~= LOGON_CMD.MDM_LOGON then
-		local errmsg = "unknown " .. manager.servername .. " message command"
-		skynet.error(errmsg)
-		return -1, errmsg
-    end
     
+    -- 解包接口
+    local cmd = proto_map.query(head.mid, head.sid)
+    if cmd == nil then
+        local errmsg = "unknown " .. manager.servername .. " sid command" 
+        skynet.error(errmsg)
+        return nil, errmsg 
+    end
+
     -- 查询业务处理函数
     local method = manager.methods[head.sid]
-    -- dump(method,  manager.servername .. ".method")
     assert(method ~= nil)
     if not method then
         local errmsg = "unknown " .. manager.servername .. " sid command" 
         skynet.error(errmsg)
         return nil, errmsg 
     end
-
-    local logonMethod = proto_map[LOGON_CMD.MDM_LOGON]
-    -- dump(logonMethod, "logonMethod")
-
-    -- 解包接口
-    local cmd = logonMethod[head.sid]
-    -- dump(cmd, "cmd")
-
-    local req = cmd.req(content.data)
-    -- dump(req, "req")
-
-    local ret, result = method.func(head, req)
+    -- pb解包
+    local reqContent = cmd.req(content.data)
+    local ret, ackContent = method.func(head, reqContent)
     -- dump(result, "result")
     if 0 == ret then
         -- body
     end
-    -- 封包接口
-    local ack = cmd.ack(result)
+    -- pb封包
+    local ack = cmd.ack(ackContent)
 
     return ret, ack
 end

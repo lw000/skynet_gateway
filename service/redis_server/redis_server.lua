@@ -64,6 +64,15 @@ end
 function command.MESSAGE(head, content)
 	assert(head ~= nil and type(head) == "table")
     assert(content ~= nil and type(content) == "table")
+    assert(head.mid ~= nil and head.mid >= 0)
+	assert(head.sid ~= nil and head.sid >= 0)
+	
+    if head.mid ~= REDIS_CMD.MDM_REDIS then
+		local errmsg = "unknown " .. command.servername .. " message command"
+		skynet.error(errmsg)
+		return 1, errmsg
+	end
+
 	return redismgr.dispatch(command.redisConn, head, content)
 end
 

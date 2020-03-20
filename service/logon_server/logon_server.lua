@@ -7,7 +7,7 @@ require("common.export")
 require("service_config.type")
 
 local command = {
-	servertype = SERVICE_TYPE.LOGON.ID, 	-- 服务类型
+	servicetype = SERVICE_TYPE.LOGON.ID, 	-- 服务类型
 	servername = SERVICE_TYPE.LOGON.NAME,  	-- 服务名
 	running = false,						-- 服务器状态
 }
@@ -24,7 +24,8 @@ function command.START()
 end
 
 function command.STOP()
-	command.running = false
+    command.running = false
+    
     logonmgr.stop()
     
     skynet.error(command.servername .. " stop")
@@ -33,8 +34,17 @@ end
 
 -- 登录服·消息处理接口
 function command.MESSAGE(head, content)
-    assert(head ~= nil and type(head) == "table")
-    assert(content ~= nil and type(content) == "table")
+    assert(head ~= nil and type(head)== "table")
+    assert(content ~= nil and type(content)== "table")
+    assert(head.mid ~= nil and head.mid >= 0)
+    assert(head.mid ~= nil and head.sid >= 0)
+    
+    if head.mid ~= LOGON_CMD.MDM then
+		local errmsg = "unknown " .. command.servername .. " message command"
+		skynet.error(errmsg)
+		return 1, errmsg
+    end
+
 	return logonmgr.dispatch(head, content)
 end
 

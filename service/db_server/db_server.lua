@@ -6,6 +6,7 @@ local dbmgr = require("db_server.manager")
 require("skynet.manager")
 require("common.export")
 require("service_config.type")
+require("service_config.cmd")
 
 --[[
     db数据库服务
@@ -61,8 +62,17 @@ end
 
 -- DB服务·消息处理接口
 function command.MESSAGE(head, content)
-    assert(head ~= nil and type(head) == "table")
-    assert(content ~= nil and type(content) == "table")
+    assert(head ~= nil and type(head)== "table")
+    assert(content ~= nil and type(content)== "table")
+    assert(head.mid ~= nil and head.mid >= 0)
+    assert(head.mid ~= nil and head.sid >= 0)
+
+    if head.mid ~= DB_CMD.MDM_DB then
+        local errmsg = "unknown " .. command.servername .. " mid command" 
+        skynet.error(errmsg)
+        return nil, errmsg
+    end
+
     -- 查询业务处理函数
     return dbmgr.dispatch(command.dbconn, head, content)
 end

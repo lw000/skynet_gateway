@@ -27,22 +27,11 @@ end
 
 function manager.dispatch(redisConn, head, content)
     assert(redisConn ~= nil)
-    assert(head ~= nil and type(head) == "table")
-    assert(content ~= nil and type(content) == "table")
-    assert(head.mid ~= nil and head.mid >= 0)
-    assert(head.sid ~= nil and head.sid >= 0)
 
     -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
-        
-    if head.mid ~= REDIS_CMD.MDM_REDIS then
-		local errmsg = "unknown " .. manager.servername .. " message command"
-		skynet.error(errmsg)
-		return -1, errmsg
-	end
 
     -- 查询业务处理函数
     local method = manager.methods[head.sid]
-    -- dump(method,  manager.servername .. ".method")
     assert(method ~= nil)
     if not method then
         local errmsg = "unknown " .. manager.servername .. " sid command" 

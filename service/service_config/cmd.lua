@@ -4,26 +4,44 @@ require("common.export")
 -------------------------------------------------------------------------------------
 ----- 登录服·命令
 LOGON_CMD = {
-    MDM_LOGON = 0x0002,   -- 登录服·主命令
+    MDM = 0x0002,     -- 登录服·主命令
     SUB = {
-        LOGON = 0x0001,   -- 请求登录
-        CHAT = 0x0002,    -- 聊天消息
+        LOGON = 0x0001,     -- 请求登录
+        CHAT = 0x0002,      -- 聊天消息
     }
 }
 
 ----- 中心服·命令
 CENTER_CMD = {
-    MDM_CENTER = 0x0003,    -- 中心F服·主命令
+    MDM = 0x0003,    -- 中心F服·主命令
+    SUB = {
+    }
 }
 
 -- 日志服·命令
 LOG_CMD = {
-    MDM_LOG = 0x0003,       -- 日志服·主命令
+    MDM = 0x0004,       -- 日志服·主命令
     SUB = {
         LOG = 0x0001,       -- 请求日志
     }
 }
 
+----- REDIS服·命令
+REDIS_CMD = {
+    MDM = 0x0005,     -- REDIS服·主命令
+    SUB = {
+    }
+}
+
+----- DB服·命令
+DB_CMD = {
+    MDM = 0x0006,        -- DB服·主命令
+    SUB = {
+    }
+}
+
+-- dump(DB_CMD, "DB_CMD")
+-- dump(REDIS_CMD, "REDIS_CMD")
 -- dump(LOG_CMD, "LOG_CMD")
 -- dump(CENTER_CMD, "CENTER_CMD")
 -- dump(LOGON_CMD, "LOGON_CMD")

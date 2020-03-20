@@ -30,12 +30,12 @@ function functor.encode_ReqLogin(t)
 end
 
 -- 解码·登录请求
-function functor.decode_ReqLogin(data)
+function functor.reqLogin(data)
     return pb.decode("lobby.ReqLogin", data)
 end
 
 -- 编码·登录回应
-function functor.encode_AckLogin(t)
+function functor.ackLogin(t)
     return pb.encode("lobby.AckLogin", t)
 end
 
@@ -50,12 +50,12 @@ function functor.encode_ChatMessage(t)
 end
 
 -- 解码·聊天请求消息
-function functor.decode_ChatMessage(data)
+function functor.chatMessage(data)
     return pb.decode("chat.ChatMessage", data)
 end
 
 -- 编码·聊天回应消息
-function functor.encode_AckChatMessage(t)
+function functor.ackChatMessage(t)
     return pb.encode("chat.AckChatMessage", t)
 end
 

@@ -57,20 +57,22 @@ function command.test()
             password = "123456",
         })
         
-        command.client:send(LOGON_CMD.MDM_LOGON, LOGON_CMD.SUB.LOGON, reqLogin, function(pk)
+        command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.LOGON, reqLogin, function(pk)
             local data = functor.decode_AckLogin(pk:data())
             dump(data, "AckLogin")
         end)
+
         local chatMessage = functor.encode_ChatMessage(
         {
             from = 10,
             to = 11,
             content = "hello"
         })
-        command.client:send(LOGON_CMD.MDM_LOGON, LOGON_CMD.SUB.CHAT, chatMessage, function(pk)
+        command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.CHAT, chatMessage, function(pk)
             local data = functor.decode_AckChatMessage(pk:data())
             dump(data, "AckChatMessage")
         end)
+
         skynet.sleep(100)
     end
 end
