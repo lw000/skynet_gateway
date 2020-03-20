@@ -6,39 +6,34 @@ require("common.export")
 require("core.define")
 
 local manager = {
-    methods = nil,   -- 业务处理接口映射表
     servername = nil,   -- 服务名字
 }
 
 function manager.start(servername)
     assert(servername ~= nil) 
     manager.servername = servername
-
-    if manager.methods == nil then
-		manager.methods = {}
-    end
-
-    -- 注册业务处理接口
-    -- manager.methods[CENTER_CMD.SUB_LOGIN] = {func=logic.onReqLogin, desc="请求登录"}
-    -- dump(manager.methods, manager.servername .. ".command.methods")
 end
 
 function manager.stop()
     manager.methods = nil
 end
 
-function manager.dispatch(mid, sid, content)
-    assert(mid ~= nil and mid >= 0)
-    assert(mid ~= nil and sid >= 0)
+function manager.dispatch(head, content)
+    assert(head ~= nil and type(head)== "table")
+    assert(content ~= nil and type(content)== "table")
+    assert(head.mid ~= nil and head.mid >= 0)
+    assert(head.mid ~= nil and head.sid >= 0)
 
-    local forward = forwardmap[mid]
+    -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
+
+    local forward = forwardmap[head.mid]
     -- dump(forward, "forward")
     if not forward then
         local errmsg = "unknown " .. manager.servername .. "mid command" 
         skynet.error(errmsg)
         return nil, errmsg 
     end
-    return skyhelper.callLocal(forward.TO, "message", mid, sid, content)
+    return skyhelper.callLocal(forward.TO, "message", head, content)
 end
 
 return manager

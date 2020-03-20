@@ -2,7 +2,7 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
 local database = require("db_server.database.database")
-local dbmgr = require("db_server.db_manager")
+local dbmgr = require("db_server.manager")
 require("skynet.manager")
 require("common.export")
 require("core.define")
@@ -58,14 +58,11 @@ function command.STOP()
 end
 
 -- DB服务·消息处理接口
-function command.MESSAGE(mid, sid, content)
-    -- skynet.error(string.format(command.servername .. ":> mid=%d sid=%d", mid, sid))
-
-    if mid ~= DB_CMD.MDM_DB then
-        skynet.error("unknown " .. command.servername .. " mid command")
-    end
+function command.MESSAGE(head, content)
+    assert(head ~= nil and type(head) == "table")
+    assert(content ~= nil and type(content) == "table")
     -- 查询业务处理函数
-    return dbmgr.dispatch(command.dbconn, mid, sid, content)
+    return dbmgr.dispatch(command.dbconn, head, content)
 end
 
 local function dispatch()

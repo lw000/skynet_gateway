@@ -1,5 +1,5 @@
 local skynet = require("skynet")
-local logic = require("db_server.db_logic")
+local logic = require("db_server.logic")
 require("common.export")
 require("core.define")
 
@@ -25,13 +25,23 @@ function manager.stop()
     manager.methods = nil
 end
 
-function manager.dispatch(dbconn, mid, sid, content)
+function manager.dispatch(dbconn, head, content)
     assert(dbconn ~= nil)
-    assert(mid ~= nil and mid >= 0)
-    assert(mid ~= nil and sid >= 0)
+    assert(head ~= nil and type(head)== "table")
+    assert(content ~= nil and type(content)== "table")
+    assert(head.mid ~= nil and head.mid >= 0)
+    assert(head.mid ~= nil and head.sid >= 0)
+
+    -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
+
+    if head.mid ~= DB_CMD.MDM_DB then
+        local errmsg = "unknown " .. manager.servername .. " mid command" 
+        skynet.error(errmsg)
+        return nil, errmsg
+    end
 
     -- 查询业务处理函数
-    local method = manager.methods[sid]
+    local method = manager.methods[head.sid]
     -- dump(method,  manager.servername .. ".method")
     assert(method ~= nil)
     if not method then
@@ -40,7 +50,7 @@ function manager.dispatch(dbconn, mid, sid, content)
         return nil, errmsg 
     end
     
-    return method.func(dbconn, content)
+    return method.func(dbconn, head, content)
 end
 
 return manager

@@ -7,7 +7,7 @@ local logic = {
 }
 
 -- 记录请求日志
-function logic.onWriteLog(dbconn, content)
+function logic.onWriteLog(dbconn, head, content)
     assert(dbconn ~= nil)
     assert(content ~= nil)
     if dbconn == nil then

@@ -64,7 +64,7 @@ function command.test()
             local data = proto_map.decode_AckLogin(pk:data())
             dump(data, "AckLogin")
         end
-        command.client:send(LOGON_CMD.MDM_LOGON, LOGON_CMD.SUB_LOGON, content, on_cb)
+        command.client:send(LOGON_CMD.MDM_LOGON, LOGON_CMD.SUB.LOGON, content, on_cb)
 
         skynet.sleep(100)
 

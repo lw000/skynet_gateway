@@ -2,8 +2,7 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
 local redis = require("skynet.db.redis")
-local logic = require("redis_server.redis_logic")
-local redismgr = require("redis_server.redis_manager")
+local redismgr = require("redis_server.manager")
 require("skynet.manager")
 require("common.export")
 require("core.define")
@@ -59,16 +58,10 @@ function command.STOP()
 end
 
 -- REDIS服务·消息处理接口
-function command.MESSAGE(mid, sid, content)
-	-- skynet.error(string.format(command.servername .. ":> mid=%d sid=%d", mid, sid))
-
-	if mid ~= REDIS_CMD.MDM_REDIS then
-		local errmsg = "unknown " .. command.servername .. " message command"
-		skynet.error(errmsg)
-		return -1, errmsg
-	end
-
-	return redismgr.dispatch(command.redisConn, mid, sid, content)
+function command.MESSAGE(head, content)
+	assert(head ~= nil and type(head) == "table")
+    assert(content ~= nil and type(content) == "table")
+	return redismgr.dispatch(command.redisConn, head, content)
 end
 
 -- 定时同步数据到数据库

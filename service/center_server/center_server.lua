@@ -26,9 +26,10 @@ function command.STOP()
     skynet.error("center_server exit")
 end
 
-function command.MESSAGE(mid, sid, content)
-    skynet.error(string.format(command.servername .. ":> mid=%d sid=%d", mid, sid))
-	return centermgr.dispatch(mid, sid, content)
+function command.MESSAGE(head, content)
+    assert(head ~= nil and type(head)== "table")
+    assert(content ~= nil and type(content)== "table")
+	return centermgr.dispatch(head, content)
 end
 
 local function dispatch()

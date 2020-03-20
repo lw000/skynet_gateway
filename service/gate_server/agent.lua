@@ -43,39 +43,29 @@ function handle.message(sock_id, msg)
     end
 
     if handle.debug then
-        skynet.error(
-            "<: agent message",
-            -- "sock_id=" .. sock_id,
-            "mid=" .. mid,
-            "sid=" .. sid,
-            "checkCode=" .. checkCode,
-            "clientId=" .. clientId,
-            "dataLen=" .. string.len(pk:data())
-        )
+        skynet.error("<: agent message","mid=" .. mid,"sid=" .. sid,"checkCode=" .. checkCode,"clientId=" .. clientId,"len=" .. string.len(pk:data()))
     end
 
-    local content = {
+    local head = {
         mid = pk:mid(),
         sid = pk:sid(),
+        ver = pk:ver(),
         checkCode = pk:checkCode(),
         clientId = pk:clientId(),
+    }
+
+    local content = {
         data = pk:data()
     }
 
-    skynet.fork(function(content)
-        dump(content, "网关接收的数据包")
-        local ret = skyhelper.callLocal(SERVICE_CONF.CENTER.NAME, "message", content.mid, content.sid, content)
-        if ret then
-            local ack = proto_map.encode_AckLogin(
-            {
-                result = 1,
-                errmsg = "登录成功",
-            })
-            handle.send(sock_id, mid, sid, clientId, ack)
+    skynet.fork(function(head, content)
+        local ok, data = skyhelper.callLocal(SERVICE_CONF.CENTER.NAME, "message", head, content)
+        if ok then
+            handle.send(sock_id, head.mid, head.sid, head.clientId, data)
+        else
+            skynet.error("agent do call error")
         end
-    end, content)
-
-    -- handle.send(sock_id, mid, sid, clientId, pk:data())
+    end, head, content)
 end
 
 function handle.ping(sock_id)

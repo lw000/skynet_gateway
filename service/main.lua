@@ -3,17 +3,17 @@ local skynet = require("skynet")
 local conf = require("config.config")
 require("common.export")
 
+-- local pack_little = string.pack("<I2", 259)
+-- local pack_bigger = string.pack(">I2", 259)
+-- print(
+--     "pack_little = " .. pack_little .. " byte1 = " .. pack_little:byte(1) .. " byte2 = " .. pack_little:byte(2)
+-- )
+-- print(
+--     "pack_bigger = " .. pack_bigger .. " byte1 = " .. pack_bigger:byte(1) .. " byte2 = " .. pack_bigger:byte(2)
+-- )
+
 local function onStart()
     skynet.newservice("debug_console", conf.debugPort)
-    -- local pack_little = string.pack("<I2", 259)
-    -- local pack_bigger = string.pack(">I2", 259)
-    -- print(
-    --     "pack_little = " .. pack_little .. " byte1 = " .. pack_little:byte(1) .. " byte2 = " .. pack_little:byte(2)
-    -- )
-    -- print(
-    --     "pack_bigger = " .. pack_bigger .. " byte1 = " .. pack_bigger:byte(1) .. " byte2 = " .. pack_bigger:byte(2)
-    -- )
-
     local center_server = skynet.newservice("center_server")
     local ret, err = skynet.call(center_server, "lua", "start")
     if err then

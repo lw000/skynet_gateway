@@ -1,5 +1,5 @@
 local skynet = require("skynet")
-local logic = require("logon_server.logon_logic")
+local logic = require("logon_server.logic")
 require("common.export")
 require("core.define")
 
@@ -17,7 +17,7 @@ function manager.start(servername)
 		manager.methods = {}
     end
     
-    manager.methods[LOGON_CMD.SUB_LOGON] = {func=logic.onReqLogin, desc="请求登录"}
+    manager.methods[LOGON_CMD.SUB.LOGON] = {func=logic.onReqLogin, desc="请求登录"}
     -- dump(manager.methods, manager.servername .. ".command.methods")
 end
 
@@ -25,12 +25,22 @@ function manager.stop()
     manager.methods = nil
 end
 
-function manager.dispatch(mid, sid, content)
-    assert(mid ~= nil and mid >= 0)
-    assert(mid ~= nil and sid >= 0)
+function manager.dispatch(head, content)
+    assert(head ~= nil and type(head)== "table")
+    assert(content ~= nil and type(content)== "table")
+    assert(head.mid ~= nil and head.mid >= 0)
+    assert(head.mid ~= nil and head.sid >= 0)
+    
+    -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
+
+    if head.mid ~= LOGON_CMD.MDM_LOGON then
+		local errmsg = "unknown " .. manager.servername .. " message command"
+		skynet.error(errmsg)
+		return -1, errmsg
+    end
     
     -- 查询业务处理函数
-    local method = manager.methods[sid]
+    local method = manager.methods[head.sid]
     -- dump(method,  manager.servername .. ".method")
     assert(method ~= nil)
     if not method then
@@ -38,7 +48,7 @@ function manager.dispatch(mid, sid, content)
         skynet.error(errmsg)
         return nil, errmsg 
     end
-    return method.func(mid, sid, content)
+    return method.func(head, content)
 end
 
 return manager

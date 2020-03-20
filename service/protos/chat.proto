@@ -1,0 +1,15 @@
+syntax = "proto2";
+
+package chat;
+
+// 请求登录
+message ChatMessage {
+    optional int32 from = 1;            // 
+    optional int32 to = 2;              // 账号
+    optional string msg = 3;            // 消息
+}
+
+// 响应登录
+message AckChatMessage {
+    optional sint32 result = 1;      // 操作结果: 0-成功; 非0-失败
+}

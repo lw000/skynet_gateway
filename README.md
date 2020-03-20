@@ -53,6 +53,12 @@ skyent websocket网关服务
 #### │   └── ws.lua
 #### ├── proto_map
 #### │   └── proto_map.lua
+#### ├── protos
+#### │   ├── build.sh
+#### │   ├── lobby.pb
+#### │   ├── lobby.proto
+#### │   ├── service.pb
+#### │   └── service.proto
 #### ├── redis_server
 #### │   ├── redis_logic.lua
 #### │   ├── redis_manager.lua

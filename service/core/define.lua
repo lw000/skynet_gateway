@@ -9,6 +9,7 @@ SERVICE_CONF = {
     LOG     =  { TYPE= 4, NAME= ".log_server",      DESC= "日志服" },
     REDIS   =  { TYPE= 5, NAME= ".redis_server",    DESC= "缓存服务器" },
     DB      =  { TYPE= 6, NAME= ".db_server",       DESC= "数据服务器" },
+    CHAT    =  { TYPE= 7, NAME= ".chat_server",       DESC= "聊天服务器" },
 }
 
 -- 服务内部协议指令
@@ -16,7 +17,10 @@ SERVICE_CONF = {
 ----- 登录服·命令
 LOGON_CMD = {
     MDM_LOGON = 0x0002,                         -- 登录服·主命令
-    SUB_LOGON = 0x0001,                         -- 请求登录
+    SUB = {
+        LOGON = 0x0001,                         -- 请求登录
+        CHAT = 0x0002,                          -- 聊天消息
+    }
 }
 
 ----- 中心服·命令

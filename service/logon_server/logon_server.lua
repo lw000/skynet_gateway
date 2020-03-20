@@ -1,7 +1,7 @@
 package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
-local logonmgr = require("logon_server.logon_manager")
+local logonmgr = require("logon_server.manager")
 require("skynet.manager")
 require("common.export")
 require("core.define")
@@ -29,14 +29,10 @@ function command.STOP()
 end
 
 -- 登录服·消息处理接口
-function command.MESSAGE(mid, sid, content)
-	-- skynet.error(string.format(command.servername .. ":> mid=%d sid=%d", mid, sid))
-	if mid ~= LOGON_CMD.MDM_LOGON then
-		local errmsg = "unknown " .. command.servername .. " message command"
-		skynet.error(errmsg)
-		return -1, errmsg
-	end
-	return logonmgr.dispatch(mid, sid, content)
+function command.MESSAGE(head, content)
+    assert(head ~= nil and type(head) == "table")
+    assert(content ~= nil and type(content) == "table")
+	return logonmgr.dispatch(head, content)
 end
 
 local function dispatch()

@@ -11,7 +11,7 @@ local logic = {
 }
 
 -- 记录请求日志
-function logic.onWriteLog(redisConn, content)
+function logic.onWriteLog(redisConn, head, content)
     local jsonstr = cjson.encode(content)
     skynet.error("REDIS·更新请求日志 " .. jsonstr)
     local ok = redisConn:hset(rediskey_web_server, content.clientIp, jsonstr)

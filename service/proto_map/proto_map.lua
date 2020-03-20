@@ -2,8 +2,8 @@ local pb = require("protobuf")
 local skynet = require("skynet")
 
 local pbfiles = {
-    "protos/service.pb",
-    "protos/lobby.pb"
+    "service/protos/service.pb",
+    "service/protos/lobby.pb"
 }
 
 proto_map = proto_map or {}
