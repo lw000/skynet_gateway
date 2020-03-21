@@ -126,11 +126,11 @@ function command.error(err)
     skynet.error(err)
 end
 
-skynet.init(
-    function()
-        skynet.error("ws_client init ......")
-    end
-)
+-- skynet.init(
+--     function()
+--         skynet.error("ws_client init ......")
+--     end
+-- )
 
 local function dispatch()
     skynet.dispatch(
