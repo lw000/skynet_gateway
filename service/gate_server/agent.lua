@@ -8,13 +8,17 @@ require("service_config.type")
 require("proto_map.proto_map")
 
 local handle = {
+    name = "gate_server_agent",
     sock_id = -1,
     debug = false,
-    center_server = 0
+    center_server_id = -1,
+    gate_server_id = -1,
 }
 
-function handle.START(sock_id, protocol, addr, center_server)
-    handle.center_server = center_server
+function handle.START(sock_id, protocol, addr, content)
+    handle.center_server_id = content.center_server_id
+    handle.gate_server_id = content.gate_server_id
+
     local ok, err = websocket.accept(sock_id, handle, protocol, addr)
     if err then
         skynet.error(err)
@@ -91,8 +95,8 @@ function handle.message(sock_id, msg)
     }
 
     local forward_message_ = function(sock_id, head, content)
-        skyhelper.sendLocal(handle.center_server, "message", head, content)
-        -- local ret, data = skyhelper.callLocal(handle.center_server, "message", head, content)
+        skyhelper.sendLocal(handle.center_server_id, "message", head, content)
+        -- local ret, data = skyhelper.callLocal(handle.center_server_id, "message", head, content)
         -- local ret, data = skyhelper.callLocal(SERVICE_TYPE.CENTER.NAME, "message", head, content)
         -- if 0 == ret then
         --     handle.send(sock_id, head.mid, head.sid, head.clientId, data)
@@ -113,10 +117,12 @@ end
 
 function handle.close(sock_id, code, reason)
     skynet.error("ws close from: " .. tostring(sock_id), code, reason)
+    skynet.exit()
 end
 
 function handle.error(sock_id)
     skynet.error("ws error from: " .. tostring(sock_id))
+    skynet.exit()
 end
 
 function handle.send(sock_id, mid, sid, clientid, content)
@@ -154,7 +160,7 @@ local function dispatch()
             if f then
                 skynet.ret(skynet.pack(f(...)))
             else
-                skynet.error(string.format(" unknown command %s", tostring(cmd)))
+                skynet.error(string.format(handle.name .. " unknown command %s", tostring(cmd)))
             end
         end
     )

@@ -70,7 +70,7 @@ function command.test()
         })
         command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.CHAT, chatMessage, function(pk)
             local data = functor.decode_AckChatMessage(pk:data())
-            -- dump(data, "AckChatMessage")
+            dump(data, "AckChatMessage")
             -- skynet.error("result=" .. tostring(data.result))
         end)
 

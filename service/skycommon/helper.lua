@@ -6,8 +6,8 @@ local skyhelper = {
 }
 
 -- 参数检查
-local function checkparam(server, rpcname, head)
-    assert(server ~= nil)
+local function checkparam(servername, rpcname, head)
+    assert(servername ~= nil)
     assert(rpcname ~= nil and type(rpcname) == "string" and rpcname ~= "" )
     assert(head ~= nil and type(head) == "table")
     assert(head.mid ~= nil and type(head.mid) == "number" and head.mid >= 0)

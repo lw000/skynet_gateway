@@ -5,7 +5,7 @@ thread = 4
 -- 表示启动名为bootstrap的Lua服务，即service/bootstrap.lua。
 bootstrap = "snlua bootstrap"
  
-harbor = 3
+harbor = 0
 
 -- main script
 start = "main_client"
@@ -19,5 +19,5 @@ logpath = "."
 --daemon = "skynet.pid"
 
 --standalone = "0.0.0.0:10000"
-address = "127.0.0.1:10002"
-master = "127.0.0.1:10000"
+--address = "127.0.0.1:10002"
+--master = "127.0.0.1:10000"

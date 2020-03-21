@@ -42,24 +42,35 @@ function manager.dispatch(head, content)
     if not method then
         local errmsg = "unknown " .. manager.servername .. " [sid=" .. tostring(head.sid) .. "] command"
         skynet.error(errmsg)
+        return nil, errmsg
+    end
+
+    if cmd.req == nil then
+        local errmsg = manager.servername .. "[PB]协议解包接口不存在"
+        skynet.error(errmsg)
         return nil, errmsg 
     end
 
-    -- 1. pb解包
+    -- 1. [PB]协议·解包
     local reqContent = cmd.req(content.data)
 
     -- 2. 业务处理
-    local ret, ackContent = method.func(head, reqContent)
-    if 0 == ret then
-        -- body
+    local ackContent = method.func(head, reqContent)
+    if ackContent == nil then
+        return
     end
 
-    -- 3. pb封包
+    if cmd.ack == nil then
+        local errmsg = manager.servername .. "[PB]协议封包接口不存在"
+        skynet.error(errmsg)
+        return nil, errmsg
+    end
+
+    -- 3. [PB]协议·封包
     local ack = cmd.ack(ackContent)
-
+    
+    -- 转发消息
     skyhelper.sendLocal(head.agent, "on_message", head, ack)
-
-    return ret, ack
 end
 
 return manager

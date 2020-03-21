@@ -2,8 +2,6 @@ local skynet = require("skynet")
 local cjson = require("cjson")
 local skyhelper = require("skycommon.helper")
 require("common.export")
-require("service_config.type")
-require("proto_map.proto_map")
 
 local logic = {
 
@@ -12,9 +10,9 @@ local logic = {
 -- 请求登录
 function logic.onReqLogin(head, content)
     -- dump(head, "head")
-    -- dump(content, "reqLogin")
-    return 0, {
-        result = 1,
+    dump(content, "reqLogin")
+    return {
+        result = 0,
         errmsg = "登录成功",
     }
 end
@@ -24,9 +22,9 @@ local msg_index = 0
 -- 聊天信息
 function logic.onChat(head, content)
     -- dump(head, "head")
-    -- dump(content, "chatMessage")
-    -- msg_index = msg_index + 1
-    return 0, {result = 1}
+    dump(content, "chatMessage")
+    msg_index = msg_index + 1
+    return {result = msg_index}
 end
 
 return logic

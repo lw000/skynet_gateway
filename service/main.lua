@@ -16,18 +16,18 @@ local function onStart()
     skynet.newservice("debug_console", conf.debugPort)
 
      -- 登录服务
-     local logon_server = skynet.newservice("logon_server")
-     local ret, err = skynet.call(logon_server, "lua", "start")
+     local logon_server_id = skynet.newservice("logon_server")
+     local ret, err = skynet.call(logon_server_id, "lua", "start")
      if err then
          skynet.error(ret, err)
          return
      end
 
     -- 中心F
-    local center_server = skynet.newservice("center_server")
-    local ret, err = skynet.call(center_server, "lua", "start", 
+    local center_server_id = skynet.newservice("center_server")
+    local ret, err = skynet.call(center_server_id, "lua", "start", 
     {
-        logon_server = logon_server
+        logon_server_id = logon_server_id
     })
     if err then
         skynet.error(ret, err)
@@ -35,11 +35,11 @@ local function onStart()
     end
 
     -- 网关服
-    local gate_server = skynet.newservice("gate_server")
-    local ret, err = skynet.call(gate_server, "lua", "start", 
+    local gate_server_id = skynet.newservice("gate_server")
+    local ret, err = skynet.call(gate_server_id, "lua", "start", 
     {
         port = conf.gatePort,
-        center_server = center_server,
+        center_server_id = center_server_id,
     })
     if err then
         skynet.error(ret, err)
