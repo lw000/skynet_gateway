@@ -1,32 +1,26 @@
 package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
-local logonmgr = require("logon_server.manager")
+local lobbymgr = require("lobby_server.manager")
 require("skynet.manager")
 require("common.export")
 require("service_config.type")
 
 local command = {
-	servicetype = SERVICE_TYPE.LOGON.ID, 	-- 服务类型
-	servername = SERVICE_TYPE.LOGON.NAME,  	-- 服务名
-	running = false,						-- 服务器状态
+	servicetype = SERVICE_TYPE.LOBBY.ID, 	-- 服务类型
+	servername = SERVICE_TYPE.LOBBY.NAME,  	-- 服务名
 }
 
 function command.START()
 	math.randomseed(os.time())
-	
-	command.running = true
 
-	logonmgr.start(command.servername)
+	lobbymgr.start(command.servername)
 
     return 0
 end
 
-function command.STOP()
-    command.running = false
-    
-    logonmgr.stop()
-
+function command.STOP() 
+    lobbymgr.stop()
     return 0
 end
 
@@ -34,7 +28,7 @@ end
 function command.MESSAGE(head, content)
     assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
-	return logonmgr.dispatch(head, content)
+	return lobbymgr.dispatch(head, content)
 end
 
 local function dispatch()

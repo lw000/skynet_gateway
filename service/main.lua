@@ -23,9 +23,9 @@ local function onStart()
         return
     end
 
-     -- 登录服务
-     local logon_server_id = skynet.newservice("logon_server")
-     local ret, err = skynet.call(logon_server_id, "lua", "start")
+     -- 大厅服务
+     local lobby_server_id = skynet.newservice("lobby_server")
+     local ret, err = skynet.call(lobby_server_id, "lua", "start")
      if err then
          skynet.error(ret, err)
          return

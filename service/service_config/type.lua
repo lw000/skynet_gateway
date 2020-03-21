@@ -4,7 +4,7 @@ require("common.export")
 -- 服务配置
 SERVICE_TYPE = {
     GATE    =  { ID= 1, NAME= ".gate_server",      DESC= "网关服" },
-    LOGON   =  { ID= 2, NAME= ".logon_server",     DESC= "登录服" },
+    LOBBY   =  { ID= 2, NAME= ".lobby_server",     DESC= "大厅服" },
     CENTER  =  { ID= 3, NAME= ".center_server",    DESC= "中心服" },
     LOG     =  { ID= 4, NAME= ".log_server",      DESC= "日志服" },
     REDIS   =  { ID= 5, NAME= ".redis_server",    DESC= "缓存服务器" },

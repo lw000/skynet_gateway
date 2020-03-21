@@ -1,15 +1,15 @@
 local skynet = require("skynet")
 local skyhelper = require("skycommon.helper")
-local logic = require("logon_server.logic")
+local logic = require("lobby_server.logic")
 require("common.export")
 require("service_config.type")
 require("proto_map.proto_map")
 
 -- 业务处理接口映射表
 local methods = {
-    [LOGON_CMD.SUB.REGIST] = {func=logic.onReqRegist, desc="请求登录"},
-    [LOGON_CMD.SUB.LOGON] = {func=logic.onReqLogin, desc="请求登录"},
-    [LOGON_CMD.SUB.CHAT] = {func=logic.onChat, desc="聊天信息"}
+    [LOBBY_CMD.SUB.REGIST] = {func=logic.onReqRegist, desc="请求登录"},
+    [LOBBY_CMD.SUB.LOGON] = {func=logic.onReqLogin, desc="请求登录"},
+    [LOBBY_CMD.SUB.CHAT] = {func=logic.onChat, desc="聊天信息"}
 }
 
 local manager = {

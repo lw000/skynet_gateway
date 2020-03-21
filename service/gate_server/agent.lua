@@ -93,18 +93,10 @@ function handle.message(sock_id, msg)
         data = pk:data()
     }
 
-    local forward_message_ = function(sock_id, head, content)
-        -- skyhelper.sendLocal(handle.center_server_id, "message", head, content)
+    local forwardMessage = function(sock_id, head, content)
         skyhelper.send(SERVICE_TYPE.CENTER.NAME, "message", head, content)
-        -- local ret, data = skyhelper.call(handle.center_server_id, "message", head, content)
-        -- local ret, data = skyhelper.call(SERVICE_TYPE.CENTER.NAME, "message", head, content)
-        -- if 0 == ret then
-        --     handle.send(sock_id, head.mid, head.sid, head.clientId, data)
-        -- else
-        --     skynet.error("agent do call error")
-        -- end
     end
-    skynet.fork(forward_message_, sock_id, head, content)
+    skynet.fork(forwardMessage, sock_id, head, content)
 end
 
 function handle.ping(sock_id)

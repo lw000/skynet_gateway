@@ -57,7 +57,7 @@ function command.regist()
         password = "123456",
     })
 
-    command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.REGIST, reqLogin, function(pk)
+    command.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(pk)
         local data = functor.decode_AckRegist(pk:data())
         dump(data, "AckRegist")
         command.logon()
@@ -72,7 +72,7 @@ function command.logon()
         password = "123456",
     })
 
-    command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.LOGON, reqLogin, function(pk)
+    command.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(pk)
         local data = functor.decode_AckLogin(pk:data())
         dump(data, "AckLogin")
 
@@ -89,7 +89,7 @@ function command.test()
             to = 11,
             content = "hello"
         })
-        command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.CHAT, chatMessage, function(pk)
+        command.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.CHAT, chatMessage, function(pk)
             local data = functor.decode_AckChatMessage(pk:data())
             dump(data, "AckChatMessage")
             -- skynet.error("result=" .. tostring(data.result))
