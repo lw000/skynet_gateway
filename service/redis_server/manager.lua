@@ -9,7 +9,7 @@ local methods = {
 }
 
 local manager = {
-    servername = nil,   -- 服务名字   
+    servername = "",   -- 服务名字  
 }
 
 function manager.start(servername)

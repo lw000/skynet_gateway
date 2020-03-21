@@ -6,8 +6,9 @@ require("common.export")
 LOGON_CMD = {
     MDM = 0x0002,     -- 登录服·主命令
     SUB = {
-        LOGON = 0x0001,     -- 请求登录
-        CHAT = 0x0002,      -- 聊天消息
+        REGIST = 0x0001,    -- 请求注册
+        LOGON = 0x0002,     -- 请求登录
+        CHAT = 0x0003,      -- 聊天消息
     }
 }
 
@@ -37,6 +38,9 @@ REDIS_CMD = {
 DB_CMD = {
     MDM = 0x0006,        -- DB服·主命令
     SUB = {
+        REGIST = 0x0001,    -- 请求注册
+        LOGON = 0x0002,     -- 请求登录
+        LOG = 0x0003,       -- 日志消息
     }
 }
 

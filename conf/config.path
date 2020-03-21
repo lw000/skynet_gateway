@@ -11,6 +11,6 @@ lua_path = root.."lib/lualib/?.lua;"..root.."lib/lualib/?/init.lua"
 cpath = root.."lib/cservice/?.so"
  
 -- 使用Lua语言编写的Skynet核心服务与自定义的服务
-luaservice = root.."lib/service/?.lua;"..root.."service/?.lua;"..root.."service/center_server/?.lua;"..root.."service/gate_server/?.lua;"..root.."service/ws_client/?.lua;"..root.."service/logon_server/?.lua"
+luaservice = root.."lib/service/?.lua;"..root.."service/?.lua;"..root.."service/center_server/?.lua;"..root.."service/gate_server/?.lua;"..root.."service/ws_client/?.lua;"..root.."service/logon_server/?.lua;"..root.."service/db_server/?.lua"
  
 lualoader = root.."lib/lualib/loader.lua"

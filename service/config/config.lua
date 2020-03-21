@@ -9,11 +9,12 @@ local config = {
     gatePort = 9948,
     -- db配置
     db = {
-        host = "127.0.0.1",
+        host = "192.168.0.102",
         port = 3306,
-        database = "qpgame",
+        database = "test",
         user = "root",
-        password = "LEvi123!",
+        -- password = "LEvi123!",
+        password = "lwstar",
     },
     --redis配置
     redis = {

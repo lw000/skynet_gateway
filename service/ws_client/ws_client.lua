@@ -44,24 +44,45 @@ function command.START(scheme, host)
     -- 网络断线检查
     command.alive()
 
-    skynet.fork(command.test)
-    
+    command.regist()
+
     return 0
+end
+
+-- 注册账号
+function command.regist()
+    local reqLogin = functor.encode_ReqRegist(
+    {
+        account = "levi",
+        password = "123456",
+    })
+
+    command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.REGIST, reqLogin, function(pk)
+        local data = functor.decode_AckRegist(pk:data())
+        dump(data, "AckRegist")
+        command.logon()
+    end)
+end
+
+-- 登录账号
+function command.logon()
+    local reqLogin = functor.encode_ReqLogin(
+    {
+        account = "levi",
+        password = "123456",
+    })
+
+    command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.LOGON, reqLogin, function(pk)
+        local data = functor.decode_AckLogin(pk:data())
+        dump(data, "AckLogin")
+
+        -- 测试发送消息
+        skynet.fork(command.test)
+    end)
 end
 
 function command.test()
     while (command.running) do
-        -- local reqLogin = functor.encode_ReqLogin(
-        -- {
-        --     account = "levi",
-        --     password = "123456",
-        -- })
-        
-        -- command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.LOGON, reqLogin, function(pk)
-        --     local data = functor.decode_AckLogin(pk:data())
-        --     -- dump(data, "AckLogin")
-        -- end)
-
         local chatMessage = functor.encode_ChatMessage(
         {
             from = 10,

@@ -12,8 +12,8 @@ local command = {
     protocol = "ws",
     -- agents = {},
     sockt_listen_id = -1,
-    center_server_id = -1,
-    gate_server_id = -1,
+    -- center_server_id = -1,
+    -- gate_server_id = -1,
 }
 
 function command.START(content)
@@ -26,13 +26,11 @@ function command.START(content)
 
     command.listen()
 
-    skynet.error(command.servername .. " start")
     return 0
 end
 
 function command.STOP()
     socket.close(command.sockt_listen_id)
-    skynet.error(command.servername .. " stop")
 end
 
 function command.listen()
@@ -45,8 +43,8 @@ function command.listen()
         local agent = skynet.newservice("agent")
         -- command.agents[agent] = agent
         skynet.send(agent, "lua", "start", id, command.protocol, addr, {
-            center_server_id = command.center_server_id,
-            gate_server_id = command.gate_server_id
+            -- center_server_id = command.center_server_id,
+            -- gate_server_id = command.gate_server_id
         })
     end)
 end

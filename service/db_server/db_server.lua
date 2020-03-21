@@ -15,7 +15,6 @@ require("service_config.cmd")
 local command = {
     servertype = SERVICE_TYPE.DB.ID,   -- 服务类型
     servername = SERVICE_TYPE.DB.NAME,   -- 服务名
-    running = false,                -- 服务器状态
     dbconn = nil,                   -- db连接
     conf = nil,                     -- 数据库配置
 }
@@ -38,25 +37,18 @@ function command.START(conf)
     if command.dbconn == nil then
         return 1, command.servername .. " fail"
     end
-    
-    command.running = true
 
     dbmgr.start(command.servername)
-    
-    skynet.error(command.servername .. " start")
     return 0
 end
 
 -- 服务停止·接口
 function command.STOP()
-    command.running = false
-    
+
     dbmgr.stop()
     
     database.close(command.dbconn)
     command.dbconn = nil
-
-    skynet.error(command.servername .. " stop")
     return 0
 end
 
@@ -64,16 +56,6 @@ end
 function command.MESSAGE(head, content)
     assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
-    assert(head.mid ~= nil and head.mid >= 0)
-    assert(head.mid ~= nil and head.sid >= 0)
-
-    if head.mid ~= DB_CMD.MDM_DB then
-        local errmsg = "unknown " .. command.servername .. " mid command" 
-        skynet.error(errmsg)
-        return nil, errmsg
-    end
-
-    -- 查询业务处理函数
     return dbmgr.dispatch(command.dbconn, head, content)
 end
 

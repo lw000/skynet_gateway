@@ -7,12 +7,13 @@ require("proto_map.proto_map")
 
 -- 业务处理接口映射表
 local methods = {
+    [LOGON_CMD.SUB.REGIST] = {func=logic.onReqRegist, desc="请求登录"},
     [LOGON_CMD.SUB.LOGON] = {func=logic.onReqLogin, desc="请求登录"},
     [LOGON_CMD.SUB.CHAT] = {func=logic.onChat, desc="聊天信息"}
 }
 
 local manager = {
-    servername = nil,   -- 服务名字  
+    servername = "",   -- 服务名字
 }
 
 function manager.start(servername)
@@ -70,7 +71,8 @@ function manager.dispatch(head, content)
     local ack = cmd.ack(ackContent)
     
     -- 转发消息
-    skyhelper.sendLocal(head.agent, "on_message", head, ack)
+    -- skyhelper.sendLocal(head.agent, "on_message", head, ack)
+    skyhelper.send(SERVICE_TYPE.CENTER.NAME, "on_message", head, ack)
 end
 
 return manager

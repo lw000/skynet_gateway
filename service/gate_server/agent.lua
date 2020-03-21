@@ -11,13 +11,13 @@ local handle = {
     name = "gate_server_agent",
     sock_id = -1,
     debug = false,
-    center_server_id = -1,
-    gate_server_id = -1,
+    -- center_server_id = -1,
+    -- gate_server_id = -1,
 }
 
 function handle.START(sock_id, protocol, addr, content)
-    handle.center_server_id = content.center_server_id
-    handle.gate_server_id = content.gate_server_id
+    -- handle.center_server_id = content.center_server_id
+    -- handle.gate_server_id = content.gate_server_id
 
     local ok, err = websocket.accept(sock_id, handle, protocol, addr)
     if err then
@@ -85,8 +85,7 @@ function handle.message(sock_id, msg)
     local head = {
         mid = pk:mid(),
         sid = pk:sid(),
-        clientId = clientId,
-        agent = skynet.self(),
+        clientId = skynet.self(),
     }
 
     -- 内容
@@ -95,9 +94,10 @@ function handle.message(sock_id, msg)
     }
 
     local forward_message_ = function(sock_id, head, content)
-        skyhelper.sendLocal(handle.center_server_id, "message", head, content)
-        -- local ret, data = skyhelper.callLocal(handle.center_server_id, "message", head, content)
-        -- local ret, data = skyhelper.callLocal(SERVICE_TYPE.CENTER.NAME, "message", head, content)
+        -- skyhelper.sendLocal(handle.center_server_id, "message", head, content)
+        skyhelper.send(SERVICE_TYPE.CENTER.NAME, "message", head, content)
+        -- local ret, data = skyhelper.call(handle.center_server_id, "message", head, content)
+        -- local ret, data = skyhelper.call(SERVICE_TYPE.CENTER.NAME, "message", head, content)
         -- if 0 == ret then
         --     handle.send(sock_id, head.mid, head.sid, head.clientId, data)
         -- else

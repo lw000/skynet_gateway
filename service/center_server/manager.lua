@@ -1,11 +1,11 @@
 local skynet = require("skynet")
 local skyhelper = require("skycommon.helper")
-local routemap = require("center_server.routemap")
+local route = require("center_server.route")
 require("common.export")
 require("service_config.type")
 
 local manager = {
-    servername = nil,   -- 服务名字
+    servername = "",   -- 服务名字
 }
 
 function manager.start(servername)
@@ -15,23 +15,21 @@ function manager.start(servername)
 end
 
 function manager.stop()
-    manager.methods = nil
+
 end
 
 function manager.dispatch(head, content)
-    assert(head.mid ~= nil and head.mid >= 0)
-    assert(head.mid ~= nil and head.sid >= 0)
+    assert(head ~= nil)
+    -- skynet.error(string.format(manager.servername .. ":> mid=%d", head.mid))
+    -- dump(head, "head")
 
-    -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
-
-    local route = routemap[head.mid]
-    -- dump(route, "route")
-    if not route then
+    local service = route[head.mid]
+    if not service then
         local errmsg = "unknown " .. manager.servername .. " mid command" 
         skynet.error(errmsg)
         return nil, errmsg 
     end
-    return skyhelper.sendLocal(route.to, "message", head, content)
+    return skyhelper.send(service.name, "message", head, content)
 end
 
 return manager

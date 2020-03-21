@@ -24,6 +24,26 @@ function functor.decode_AckRegService(data)
     return pb.decode("Tws.AckRegService", data)
 end
 
+-- 编码·注册请求
+function functor.encode_ReqRegist(t)
+    return pb.encode("lobby.ReqRegist", t)
+end
+
+-- 解码·注册请求
+function functor.reqRegist(data)
+    return pb.decode("lobby.ReqRegist", data)
+end
+
+-- 编码·注册回应
+function functor.ackRegist(t)
+    return pb.encode("lobby.AckRegist", t)
+end
+
+-- 解码·注册回应
+function functor.decode_AckRegist(data)
+    return pb.decode("lobby.AckRegist", data)
+end
+
 -- 编码·登录请求
 function functor.encode_ReqLogin(t)
     return pb.encode("lobby.ReqLogin", t)

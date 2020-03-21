@@ -6,6 +6,35 @@ require("common.export")
 local logic = {
 }
 
+-- 请求注册
+function logic.onReqRegist(dbconn, head, content)
+    -- dump(head, "head")
+    dump(content, "reqRegist")
+
+    local reply = {
+        result = 0,
+        errmsg = "登录成功",
+    }
+
+    return reply
+end
+
+-- 请求登录
+function logic.onReqLogin(dbconn, head, content)
+    -- dump(head, "head")
+    dump(content, "reqLogin")
+
+    local reply = {
+        result = 0,
+        userInfo = {
+            userId = 10000,
+            score = 1000,
+        },
+        errmsg = "登录成功",
+    }
+    return reply
+end
+
 -- 记录请求日志
 function logic.onWriteLog(dbconn, head, content)
     assert(dbconn ~= nil)

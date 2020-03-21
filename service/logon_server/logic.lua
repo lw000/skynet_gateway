@@ -7,14 +7,22 @@ local logic = {
 
 }
 
+-- 请求注册
+function logic.onReqRegist(head, content)
+    -- dump(head, "head")
+    -- dump(content, "reqRegist")
+
+    local reply = skyhelper.call(SERVICE_TYPE.DB.NAME, "message", head, content)
+    return reply
+end
+
 -- 请求登录
 function logic.onReqLogin(head, content)
     -- dump(head, "head")
-    dump(content, "reqLogin")
-    return {
-        result = 0,
-        errmsg = "登录成功",
-    }
+    -- dump(content, "reqLogin")
+
+    local reply = skyhelper.call(SERVICE_TYPE.DB.NAME, "message", head, content)
+    return reply
 end
 
 local msg_index = 0

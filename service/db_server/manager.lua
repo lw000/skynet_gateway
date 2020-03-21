@@ -2,14 +2,17 @@ local skynet = require("skynet")
 local logic = require("db_server.logic")
 require("common.export")
 require("service_config.type")
+require("service_config.cmd")
 
 -- 业务处理接口映射表
 local methods = {
-    [DB_CMD.SUB_LOG] = {func=logic.onWriteLog, desc="记录请求日志"}
+    [DB_CMD.SUB.REGIST] = {func=logic.onReqRegist, desc="用户注册"},
+    [DB_CMD.SUB.LOGON] = {func=logic.onReqLogin, desc="用户登录"},
+    [DB_CMD.SUB.LOG] = {func=logic.onWriteLog, desc="记录请求日志"}
 }
 
 local manager = {
-    servername = nil,   -- 服务名字
+    servername = "",   -- 服务名字
 }
 
 function manager.start(servername)
@@ -32,7 +35,7 @@ function manager.dispatch(dbconn, head, content)
     if not method then
         local errmsg = "unknown " .. manager.servername .. " [sid=" .. tostring(head.sid) .. "] command"
         skynet.error(errmsg)
-        return nil, errmsg 
+        return nil, errmsg
     end
     
     return method.func(dbconn, head, content)

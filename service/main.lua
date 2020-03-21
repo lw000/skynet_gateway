@@ -15,6 +15,14 @@ require("common.export")
 local function onStart()
     skynet.newservice("debug_console", conf.debugPort)
 
+    -- DB服务
+    local db_server_id = skynet.newservice("db_server")
+    local ret, err = skynet.call(db_server_id, "lua", "start", conf.db)
+    if err then
+        skynet.error(ret, err)
+        return
+    end
+
      -- 登录服务
      local logon_server_id = skynet.newservice("logon_server")
      local ret, err = skynet.call(logon_server_id, "lua", "start")
@@ -27,7 +35,7 @@ local function onStart()
     local center_server_id = skynet.newservice("center_server")
     local ret, err = skynet.call(center_server_id, "lua", "start", 
     {
-        logon_server_id = logon_server_id
+        -- logon_server_id = logon_server_id
     })
     if err then
         skynet.error(ret, err)
@@ -39,7 +47,7 @@ local function onStart()
     local ret, err = skynet.call(gate_server_id, "lua", "start", 
     {
         port = conf.gatePort,
-        center_server_id = center_server_id,
+        -- center_server_id = center_server_id,
     })
     if err then
         skynet.error(ret, err)
