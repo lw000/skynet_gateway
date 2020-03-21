@@ -10,7 +10,7 @@ function WSClient:ctor()
     self._scheme = ""
     self._host = ""
     self._path = ""
-    self._heartbeattime = 10 -- 心跳时间
+    self._heartbeattime = 30 -- 心跳时间
     self._timeout = 100 * 15 -- 网络连接超时时间
     self._serverId = 0
     self._msgswitch = {}

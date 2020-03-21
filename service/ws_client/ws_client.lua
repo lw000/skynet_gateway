@@ -51,16 +51,16 @@ end
 
 function command.test()
     while (command.running) do
-        local reqLogin = functor.encode_ReqLogin(
-        {
-            account = "levi",
-            password = "123456",
-        })
+        -- local reqLogin = functor.encode_ReqLogin(
+        -- {
+        --     account = "levi",
+        --     password = "123456",
+        -- })
         
-        command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.LOGON, reqLogin, function(pk)
-            local data = functor.decode_AckLogin(pk:data())
-            -- dump(data, "AckLogin")
-        end)
+        -- command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.LOGON, reqLogin, function(pk)
+        --     local data = functor.decode_AckLogin(pk:data())
+        --     -- dump(data, "AckLogin")
+        -- end)
 
         local chatMessage = functor.encode_ChatMessage(
         {
@@ -71,6 +71,7 @@ function command.test()
         command.client:send(LOGON_CMD.MDM, LOGON_CMD.SUB.CHAT, chatMessage, function(pk)
             local data = functor.decode_AckChatMessage(pk:data())
             -- dump(data, "AckChatMessage")
+            -- skynet.error("result=" .. tostring(data.result))
         end)
 
         skynet.sleep(100)

@@ -11,12 +11,15 @@ local command = {
     sfd = 0,
     port = 8080,
     protocol = "ws",
-    agents = {}
+    agents = {},
+    center_server = 0,
 }
 
-function command.START(port)
-    command.port = port
-    command.run()
+function command.START(conf)
+    command.port = conf.port
+    command.center_server = conf.center_server
+
+    command.listen()
 
     skynet.error(command.servername .. " start")
     return 0
@@ -28,16 +31,16 @@ function command.STOP()
     skynet.error(command.servername .. " stop")
 end
 
-function command.run()
+function command.listen()
     command.sfd = socket.listen("0.0.0.0", command.port)
-    assert(command.sfd ~= 0, "listten fail")
+    assert(command.sfd ~= 0, "listen fail")
 
     skynet.error(string.format("listen websocket port: " .. command.port))
 
     socket.start(command.sfd, function(id, addr)
         local agent = skynet.newservice("agent")
         command.agents[agent] = agent
-        skynet.send(agent, "lua", id, command.protocol, addr)
+        skynet.send(agent, "lua", "start", id, command.protocol, addr, command.center_server)
     end)
 end
 

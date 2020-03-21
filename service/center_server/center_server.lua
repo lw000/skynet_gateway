@@ -8,11 +8,12 @@ require("service_config.type")
 
 local command = {
     servertype = SERVICE_TYPE.CENTER.ID,
-    servername = SERVICE_TYPE.CENTER.NAME, 
+    servername = SERVICE_TYPE.CENTER.NAME,
+    logon_server = 0 
 }
 
-function command.START(port)
-    command.port = port
+function command.START(conf)
+    command.logon_server = conf.logon_server
 
     centermgr.start(command.servername)
 

@@ -9,17 +9,37 @@ require("proto_map.proto_map")
 
 local handle = {
     sock_id = -1,
-    debug = false
+    debug = false,
+    center_server = 0
 }
+
+function handle.START(sock_id, protocol, addr, center_server)
+    handle.center_server = center_server
+    local ok, err = websocket.accept(sock_id, handle, protocol, addr)
+    if err then
+        skynet.error(err)
+        return 1, "websocket.accept fail"
+    end
+    
+    return 0
+end
+
+function handle.STOP()
+
+end
+
+function handle.ON_MESSAGE(head, content)
+    handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content)
+end
 
 function handle.connect(sock_id)
     handle.sock_id = sock_id
-    skynet.error("ws connect from: " .. tostring(sock_id))
+    -- skynet.error("ws connect from: " .. tostring(sock_id))
 end
 
 function handle.handshake(sock_id, header, url)
     local addr = websocket.addrinfo(sock_id)
-    skynet.error("ws handshake from", "addr=" .. addr, "url=" .. url)
+    -- skynet.error("ws handshake from", "addr=" .. addr, "url=" .. url)
     
     -- skynet.error("----header-----")
     -- for k, v in pairs(header) do
@@ -34,11 +54,17 @@ function handle.message(sock_id, msg)
 
     local mid = pk:mid()
     local sid = pk:sid()
+    local ver = pk:ver()
     local checkCode = pk:checkCode()
     local clientId = pk:clientId()
 
+    -- 检查版本
+    if ver >= 0 then
+        -- body
+    end
+
     -- 包校验码检查
-    if checkCode  ~= 123456 then
+    if checkCode ~= 123456 then
         -- body
     end
 
@@ -51,29 +77,30 @@ function handle.message(sock_id, msg)
         return
     end
 
+    -- 包头
     local head = {
         mid = pk:mid(),
         sid = pk:sid(),
-        ver = pk:ver(),
-        checkCode = pk:checkCode(),
-        clientId = pk:clientId(),
+        clientId = clientId,
+        agent = skynet.self(),
     }
 
+    -- 内容
     local content = {
         data = pk:data()
     }
 
-    local forward_func = function(sock_id, head, content)
-        local ret, data = skyhelper.callLocal(SERVICE_TYPE.CENTER.NAME, "message", head, content)
-        if 0 == ret then
-            handle.send(sock_id, head.mid, head.sid, head.clientId, data)
-        else
-            skynet.error("agent do call error")
-        end
+    local forward_message_ = function(sock_id, head, content)
+        skyhelper.sendLocal(handle.center_server, "message", head, content)
+        -- local ret, data = skyhelper.callLocal(handle.center_server, "message", head, content)
+        -- local ret, data = skyhelper.callLocal(SERVICE_TYPE.CENTER.NAME, "message", head, content)
+        -- if 0 == ret then
+        --     handle.send(sock_id, head.mid, head.sid, head.clientId, data)
+        -- else
+        --     skynet.error("agent do call error")
+        -- end
     end
-    
-    skynet.fork(forward_func, sock_id, head, content)
-
+    skynet.fork(forward_message_, sock_id, head, content)
 end
 
 function handle.ping(sock_id)
@@ -95,12 +122,7 @@ end
 function handle.send(sock_id, mid, sid, clientid, content)
     local pk = packet:new()
     pk:pack(mid, sid, clientid, content)
-    if pk:data() == nil then
-        skynet.error("packet create error")
-        return 1, "packet create error"
-    end
     websocket.write(sock_id, pk:data(), "binary", 0x02)
-    return 0
 end
 
 -- skynet.init(
@@ -110,13 +132,29 @@ end
 -- )
 
 local function dispatch()
+    -- skynet.dispatch(
+    --     "lua",
+    --     function(session, address, sock_id, protocol, addr, center_server)
+    --         handle.center_server = center_server
+    --         -- skynet.error("accept sock_id=" .. sock_id .. " addr=" .. skynet.address(address) .. " addr=" .. addr)
+    --         skynet.error("accept sock_id=" .. sock_id .. " addr=" .. addr)
+    --         local ok, err = websocket.accept(sock_id, handle, protocol, addr)
+    --         if err then
+    --             skynet.error(err)
+    --         end
+    --     end
+    -- )
+
     skynet.dispatch(
         "lua",
-        function(session, address, sock_id, protocol, addr)
-            skynet.error("accept client", "sock_id=" .. sock_id, "addr=" .. skynet.address(address), "addr=" .. addr)
-            local ok, err = websocket.accept(sock_id, handle, protocol, addr)
-            if err then
-                skynet.error(err)
+        function(session, address, cmd, ...)
+            cmd = cmd:upper()
+            local f = handle[cmd]
+            assert(f)
+            if f then
+                skynet.ret(skynet.pack(f(...)))
+            else
+                skynet.error(string.format(" unknown command %s", tostring(cmd)))
             end
         end
     )

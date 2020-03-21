@@ -1,5 +1,4 @@
 local skynet = require("skynet")
-local logic = require("center_server.logic")
 local skyhelper = require("skycommon.helper")
 local routemap = require("center_server.routemap")
 require("common.export")
@@ -32,7 +31,7 @@ function manager.dispatch(head, content)
         skynet.error(errmsg)
         return nil, errmsg 
     end
-    return skyhelper.callLocal(route.to, "message", head, content)
+    return skyhelper.sendLocal(route.to, "message", head, content)
 end
 
 return manager

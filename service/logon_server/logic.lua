@@ -11,6 +11,7 @@ local logic = {
 
 -- 请求登录
 function logic.onReqLogin(head, content)
+    -- dump(head, "head")
     -- dump(content, "reqLogin")
     return 0, {
         result = 1,
@@ -18,9 +19,13 @@ function logic.onReqLogin(head, content)
     }
 end
 
+local msg_index = 0
+
 -- 聊天信息
 function logic.onChat(head, content)
+    -- dump(head, "head")
     -- dump(content, "chatMessage")
+    -- msg_index = msg_index + 1
     return 0, {result = 1}
 end
 
