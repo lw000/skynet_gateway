@@ -2,47 +2,48 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local websocket = require("http.websocket")
 local packet = require("network.packet")
-local mgr = require("center_server.manager")
 local skyhelper = require("skycommon.helper")
 require("skynet.manager")
 require("service_config.type")
 require("proto_map.proto_map")
 
 local handle = {
-    name = "center_server.agent",
+    name = "gate_server.agent",
     debug = false,
     sock_id = -1,
-    center_server = -1,
+    gate_server = -1,
+    backend_server = -1,
+    backend = nil,
 }
 
 function handle.START(sock_id, protocol, addr, content)
+    -- dump(content, "content")
     handle.debug = content.debug
-    handle.servername = content.servername
-    handle.center_server = content.center_server
+    handle.gate_server = content.gate_server
+    handle.backend_server = content.backend_server
+    handle.backend = content.backend
+
+    handle.name = string.format("%s.%d", handle.name, skynet.self())
+
     local ok, err = websocket.accept(sock_id, handle, protocol, addr)
     if err then
         skynet.error(err)
         return 1, "websocket.accept fail"
     end
-    handle.name = string.format("%s.%d", handle.name, skynet.self())
-
-    mgr.start(handle.name, handle.debug)
-
+    
     return 0
 end
 
 function handle.STOP()
-    mgr.stop()
+
 end
 
 function handle.SERVICE_MESSAGE(head, content)
-    if handle.debug then
-        -- dump(head, handle.name .. ".head")
-        -- dump(content, handle.name .. ".content")
-    end
-    skynet.fork(function(head, content)
-        handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content)
+    -- dump(head, handle.name .. ".head")
+    skynet.fork(function (head, content)
+        handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content.data)
     end, head, content)
+    
 end
 
 function handle.connect(sock_id)
@@ -94,22 +95,25 @@ function handle.message(sock_id, msg)
     local head = {
         mid = pk:mid(),
         sid = pk:sid(),
-        clientId = clientId,
-        serviceId = skynet.self(),
+        clientId = skynet.self(),
     }
 
-    -- 内容
+    -- 包体内容
     local content = {
         data = pk:data()
     }
 
-    if handle.debug then
-        -- dump(head, handle.name .. ".head")
-        -- dump(content, handle.name .. ".content")
-    end
-
-    -- 消息分发
-    mgr.dispatch(head, content)
+    -- local forwardMessage = function(head, content)   
+    --     -- dump(head, handle.name .. ".head")
+    --     -- dump(content, handle.name .. ".content")
+    --     skyhelper.send(handle.backend_server, "service_message", head, content)
+    -- end
+    -- skynet.fork(forwardMessage, head, content)
+    skynet.error("handle.backend", handle.backend)
+    
+    skynet.fork(function (head, content)
+        handle.send(handle.backend, head.mid, head.sid, head.clientId, content.data)
+    end, head, content)
 end
 
 function handle.ping(sock_id)
@@ -169,7 +173,7 @@ local function dispatch()
             end
         end
     )
-    skynet.register(".center_agent")
+    skynet.register(".gate_agent")
 end
 
 skynet.start(dispatch)

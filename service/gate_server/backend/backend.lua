@@ -2,12 +2,12 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
 local ws = require("network.ws")
+local skyhelper = require("skycommon.helper")
 require("skynet.manager")
 require("common.export")
 require("service_config.cmd")
 require("service_config.type")
 require("proto_map.proto_func")
-local skyhelper = require("skycommon.helper")
 
 local command = {
     name = "backend",
@@ -52,7 +52,10 @@ end
 function command.SERVICE_MESSAGE(head, content)
     -- dump(head, command.name .. ".head")
     -- dump(content, command.name .. ".content")
-	command.client:sendWithClientId(head.mid, head.sid, head.clientId, content.data)
+    -- command.client:sendWithClientId(head.mid, head.sid, head.clientId, content.data)
+    skynet.fork(function (head, content)
+        command.client:sendWithClientId(head.mid, head.sid, head.clientId, content.data)
+    end, head, content)
 end
 
 function command.registerService()
@@ -133,8 +136,11 @@ function command.message(pk)
         data = pk:data()
     }
 
-    local forwardMessage = function(clientId, head, content)   
-        -- dump(head, command.name .. ".head")
+    local forwardMessage = function(clientId, head, content)
+        if command.debug then
+            -- dump(head, command.name .. ".head")
+            -- dump(content, command.name .. ".content")
+        end  
         skyhelper.send(clientId, "service_message", head, content)
     end
     skynet.fork(forwardMessage, clientId, head, content)

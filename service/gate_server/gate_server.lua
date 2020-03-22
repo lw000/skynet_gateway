@@ -2,6 +2,7 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
+-- local backend = require("gate_server.backend.backend")
 require("skynet.manager")
 require("service_config.type")
 
@@ -25,12 +26,18 @@ function command.START(content)
     command.centerIP = content.centerIP,
     assert(command.port > 0)
 
-    command.backend_server = skynet.newservice("backend")
     local host = string.format("%s:%d", command.centerIP, command.centerPort)
+    command.backend_server = skynet.newservice("backend")
     skynet.call(command.backend_server, "lua", "start", "ws", host, {
         debug = content.debug,
         gate_server = skynet.self(),
     })
+
+    -- backend.start("ws", host, {
+    --     debug = command.debug,
+    --     gate_server = skynet.self(),
+    -- })
+    -- dump(backend, "backend")
     
     command.listen()
 
@@ -38,6 +45,7 @@ function command.START(content)
 end
 
 function command.STOP()
+    backend.stop()
     socket.close(command.sockt_listen_id)
 end
 
@@ -52,7 +60,8 @@ function command.listen()
         -- command.agents[agent] = agent
         skynet.send(agent, "lua", "start", id, command.protocol, addr, {
             debug = command.debug,
-            backend_server = command.backend_server,    
+            backend_server = command.backend_server,
+            -- backend = backend.sfd(), 
             gate_server = skynet.self(),
         })
     end)

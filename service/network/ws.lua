@@ -5,7 +5,7 @@ local packet = require("network.packet")
 local WSClient = class("WSClient")
 
 function WSClient:ctor()
-    self._sfd = -1
+    self._wsid = -1
     self._websocket = nil
     self._scheme = ""
     self._host = ""
@@ -145,6 +145,10 @@ function WSClient:sendWithClientId(mid, sid, clientId, content, fn)
     end
     self._websocket.write(self._wsid, pk:data(), "binary", 0x02)
     return 0
+end
+
+function WSClient:sfd()
+    return self._wsid
 end
 
 function WSClient:open()

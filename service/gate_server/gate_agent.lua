@@ -38,7 +38,10 @@ end
 
 function handle.SERVICE_MESSAGE(head, content)
     -- dump(head, handle.name .. ".head")
-    handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content.data)
+    skynet.fork(function (head, content)
+        handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content.data)
+    end, head, content)
+    
 end
 
 function handle.connect(sock_id)
@@ -98,12 +101,14 @@ function handle.message(sock_id, msg)
         data = pk:data()
     }
 
-    local forwardMessage = function(sock_id, head, content)   
-        -- dump(head, handle.name .. ".head")
-        -- dump(content, handle.name .. ".content")
+    local forwardMessage = function(head, content)
+        if handle.debug then
+            -- dump(head, handle.name .. ".head")
+            -- dump(content, handle.name .. ".content")
+        end
         skyhelper.send(handle.backend_server, "service_message", head, content)
     end
-    skynet.fork(forwardMessage, sock_id, head, content)
+    skynet.fork(forwardMessage, head, content)
 end
 
 function handle.ping(sock_id)
