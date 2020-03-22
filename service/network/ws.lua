@@ -26,8 +26,8 @@ function WSClient:connect(scheme, host, path, heartbeattime)
 
     path = path or ""
     assert(type(path) == "string", "path must is string")
-
-    heartbeattime = heartbeattime or 10
+    
+    heartbeattime = heartbeattime or 30
     assert(type(heartbeattime) == "number", "heartbeattime must is number")
 
     self._scheme = scheme
@@ -48,7 +48,6 @@ function WSClient:connect(scheme, host, path, heartbeattime)
     end
 
     local ok = xpcall(do_connect_ws, on_error)
-    -- dump(ok, "ok")
     if not ok then
         return 1, "ws connect fail"
     end
@@ -68,15 +67,9 @@ function WSClient:connect(scheme, host, path, heartbeattime)
                     -- print("当前时间", os.date("%Y-%m-%d %H:%M:%S", os.time(now)))
 
                     if math.fmod(now.sec, self._heartbeattime) == 0 then
-                        self:send(
-                            0x0000,
-                            0x0000,
-                            nil,
-                            function(data)
-                                skynet.error("ws心跳", os.date("%Y-%m-%d %H:%M:%S", os.time()))
-                            end
-                        )
-                    -- self:send(0x0000, 0x0000, nil)
+                        self:send(0x0000,0x0000,nil,function(data)
+                            skynet.error("heartbeat", os.date("%Y-%m-%d %H:%M:%S", os.time()))
+                        end)
                     end
                 end
             end
@@ -87,7 +80,7 @@ function WSClient:connect(scheme, host, path, heartbeattime)
             
             local ok = xpcall(on_heartbeat, on_error)
             -- dump(ok, "heartbeat")
-            skynet.error("websocket heartbeat exit")
+            skynet.error("heartbeat exit")
         end
     )
 
