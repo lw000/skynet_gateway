@@ -8,22 +8,27 @@ require("service_config.type")
 local command = {
     servertype = SERVICE_TYPE.GATE.ID,
     servername = SERVICE_TYPE.GATE.NAME,
+    debug = false,
     port = 8080,
     centerPort = 8081,
+    centerIP = "127.0.0.1",
     protocol = "ws",
     -- agents = {},
     sockt_listen_id = -1,
-    backend = -1,        -- 后端转发服务ID
+    backend_server = -1,        -- 后端转发服务ID
 }
 
 function command.START(content)
+    command.debug = content.debug
     command.port = content.port
-    command.centerPort = content.centerPort,
+    command.centerPort = content.centerPort
+    command.centerIP = content.centerIP,
     assert(command.port > 0)
 
-    command.backend = skynet.newservice("backend")
-    local host = string.format("%s:%d", "127.0.0.1", command.centerPort)
-    skynet.call(command.backend, "lua", "start", "ws", host, {
+    command.backend_server = skynet.newservice("backend")
+    local host = string.format("%s:%d", command.centerIP, command.centerPort)
+    skynet.call(command.backend_server, "lua", "start", "ws", host, {
+        debug = content.debug,
         gate_server = skynet.self(),
     })
     
@@ -46,7 +51,8 @@ function command.listen()
         local agent = skynet.newservice("gate_agent")
         -- command.agents[agent] = agent
         skynet.send(agent, "lua", "start", id, command.protocol, addr, {
-            backend = command.backend,    
+            debug = command.debug,
+            backend_server = command.backend_server,    
             gate_server = skynet.self(),
         })
     end)

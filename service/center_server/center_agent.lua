@@ -10,13 +10,13 @@ require("proto_map.proto_map")
 
 local handle = {
     name = "center_server.agent",
-    sock_id = -1,
     debug = false,
+    sock_id = -1,
     center_server = -1,
-    clientId = 0,
 }
 
 function handle.START(sock_id, protocol, addr, content)
+    handle.debug = content.debug
     handle.servername = content.servername
     handle.center_server = content.center_server
     local ok, err = websocket.accept(sock_id, handle, protocol, addr)
@@ -24,8 +24,9 @@ function handle.START(sock_id, protocol, addr, content)
         skynet.error(err)
         return 1, "websocket.accept fail"
     end
+    handle.name = string.format("%s.%d", handle.name, skynet.self())
 
-    mgr.start(handle.name)
+    mgr.start(handle.name, handle.debug)
 
     return 0
 end
@@ -34,9 +35,11 @@ function handle.STOP()
     mgr.stop()
 end
 
-function handle.ON_MESSAGE(head, content)
-    -- dump(head, handle.name .. ".head")
-    -- dump(content, handle.name .. ".content")
+function handle.SERVICE_MESSAGE(head, content)
+    if handle.debug then
+        -- dump(head, handle.name .. ".head")
+        -- dump(content, handle.name .. ".content")
+    end
     handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content)
 end
 
@@ -77,7 +80,7 @@ function handle.message(sock_id, msg)
     end
 
     if handle.debug then
-        skynet.error("<: agent message","mid=" .. mid,"sid=" .. sid,"checkCode=" .. checkCode,"clientId=" .. clientId,"len=" .. string.len(pk:data()))
+        skynet.error(handle.name .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
     end
 
     -- 心跳消息处理
@@ -98,8 +101,10 @@ function handle.message(sock_id, msg)
         data = pk:data()
     }
 
-    -- dump(head, handle.name .. ".head")
-    -- dump(content, handle.name .. ".content")
+    if handle.debug then
+        -- dump(head, handle.name .. ".head")
+        -- dump(content, handle.name .. ".content")
+    end
 
     -- 消息分发
     mgr.dispatch(head, content)

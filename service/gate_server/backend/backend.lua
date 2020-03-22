@@ -11,8 +11,8 @@ local skyhelper = require("skycommon.helper")
 
 local command = {
     name = "backend",
-    debug = false,
     scheme = "ws",
+    debug = false,
     running = false,
     serverId = 0,
     gate_server = -1,
@@ -22,6 +22,7 @@ local command = {
 function command.START(scheme, host, content)
     command.scheme = scheme
     command.host = host
+    command.debug = content.debug
     command.gate_server = content.gate_server
 
     command.client:handleMessage(command.message)
@@ -32,6 +33,8 @@ function command.START(scheme, host, content)
     end
 
     command.running = true
+
+    command.name = string.format("%s.%d", command.name, skynet.self())
 
     -- 注册服务
     command.registerService()
@@ -46,7 +49,7 @@ function command.STOP()
 
 end
 
-function command.CORE_MESSAGE(head, content)
+function command.SERVICE_MESSAGE(head, content)
     -- dump(head, command.name .. ".head")
     -- dump(content, command.name .. ".content")
 	command.client:sendWithClientId(head.mid, head.sid, head.clientId, content.data)
@@ -59,17 +62,16 @@ function command.registerService()
             svrType = SERVICE_TYPE.GATE.ID
         }
     )
-
-    local on_cb_regservice = function(pk)
+    command.client:registerService(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, content, function(pk)
         local data = functor.unpack_AckRegService(pk:data())
         dump(data, "AckRegistService")
         if data.result == 0 then
             -- skynet.error("code=" .. data.result, "serverId=" .. data.serverId, "errmsg=" .. data.errmsg)
         end
-    end
-    command.client:registerService(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, content, on_cb_regservice)
+    end)
 end
 
+-- 网络状态是否存活
 function command.alive()
     local on_alive = function()
         while command.running do
@@ -114,12 +116,7 @@ function command.message(pk)
     end
 
     if command.debug then
-        skynet.error("<: " .. command.name .. " message", "mid=" .. mid,"sid=" .. sid,"checkCode=" .. checkCode,"clientId=" .. clientId,"len=" .. string.len(pk:data()))
-    end
-
-    -- 心跳消息处理
-    if mid == 0 and sid == 0 then
-        return
+        skynet.error(command.name .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
     end
 
     -- 包头
@@ -138,7 +135,7 @@ function command.message(pk)
 
     local forwardMessage = function(clientId, head, content)   
         -- dump(head, command.name .. ".head")
-        skyhelper.send(clientId, "core_message", head, content)
+        skyhelper.send(clientId, "service_message", head, content)
     end
     skynet.fork(forwardMessage, clientId, head, content)
 end

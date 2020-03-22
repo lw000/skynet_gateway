@@ -49,7 +49,7 @@ function manager.dispatch(head, content)
     end
 
     -- 转发消息
-    skyhelper.send(SERVICE_TYPE.CENTER.NAME, "on_core_message", head, ack)
+    skyhelper.send(SERVICE_TYPE.CENTER.NAME, "service_message", head, ack)
 end
 
 return manager

@@ -1,4 +1,4 @@
-include "config.path"
+include "config_center.path"
  
 thread = 8
 -- 启动的第一服务及参数，默认为snlua bootstrap。

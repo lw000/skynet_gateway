@@ -6,11 +6,13 @@ require("common.export")
 local logic = {
 }
 
+local userId_index = 10000
+
 -- 请求注册
 function logic.onReqRegist(dbconn, head, content)
     -- dump(head, "head")
-    dump(content, "reqRegist")
-    local reply ={
+    -- dump(content, "reqRegist")
+    local reply = {
         result = 0,
         errmsg = "注册成功",
     }
@@ -20,39 +22,17 @@ end
 -- 请求登录
 function logic.onReqLogin(dbconn, head, content)
     -- dump(head, "head")
-    dump(content, "reqLogin")
-
-    if content.account == "levi_0" then
-        local reply = {
-            result = 0,
-            userInfo = {
-                userId = 10000,
-                score = 1000,
-            },
-            errmsg = "登录成功",
-        }
-        return reply
-    elseif content.account == "levi_1" then
-        local reply = {
-            result = 0,
-            userInfo = {
-                userId = 10001,
-                score = 1000,
-            },
-            errmsg = "登录成功",
-        }
-        return reply
-    else
-        local reply = {
-            result = 0,
-            userInfo = {
-                userId = 1000,
-                score = 1000,
-            },
-            errmsg = "登录成功",
-        }
-        return reply
-    end
+    -- dump(content, "reqLogin")
+    userId_index = userId_index + 1
+    local reply = {
+        result = 0,
+        userInfo = {
+            userId = userId_index,
+            score = 1000,
+        },
+        errmsg = "登录成功",
+    }
+    return reply
 end
 
 -- 记录请求日志

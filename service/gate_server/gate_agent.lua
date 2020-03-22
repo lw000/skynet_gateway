@@ -9,17 +9,19 @@ require("proto_map.proto_map")
 
 local handle = {
     name = "gate_server.agent",
-    sock_id = -1,
     debug = false,
+    sock_id = -1,
     gate_server = -1,
-    backend = -1,
+    backend_server = -1,
 }
 
 function handle.START(sock_id, protocol, addr, content)
     -- dump(content, "content")
-
+    handle.debug = content.debug
     handle.gate_server = content.gate_server
-    handle.backend = content.backend
+    handle.backend_server = content.backend_server
+
+    handle.name = string.format("%s.%d", handle.name, skynet.self())
 
     local ok, err = websocket.accept(sock_id, handle, protocol, addr)
     if err then
@@ -34,7 +36,7 @@ function handle.STOP()
 
 end
 
-function handle.CORE_MESSAGE(head, content)
+function handle.SERVICE_MESSAGE(head, content)
     -- dump(head, handle.name .. ".head")
     handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content.data)
 end
@@ -76,7 +78,7 @@ function handle.message(sock_id, msg)
     end
 
     if handle.debug then
-        skynet.error("<: " .. handle.name .. " message", "mid=" .. mid,"sid=" .. sid,"checkCode=" .. checkCode,"clientId=" .. clientId,"len=" .. string.len(pk:data()))
+        skynet.error(handle.name .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
     end
 
     -- 心跳消息处理
@@ -91,17 +93,17 @@ function handle.message(sock_id, msg)
         clientId = skynet.self(),
     }
 
-    -- 内容
+    -- 包体内容
     local content = {
         data = pk:data()
     }
 
-    local forwardMessage = function(backend, sock_id, head, content)   
+    local forwardMessage = function(sock_id, head, content)   
         -- dump(head, handle.name .. ".head")
         -- dump(content, handle.name .. ".content")
-        skyhelper.send(backend, "core_message", head, content)
+        skyhelper.send(handle.backend_server, "service_message", head, content)
     end
-    skynet.fork(forwardMessage, handle.backend, sock_id, head, content)
+    skynet.fork(forwardMessage, sock_id, head, content)
 end
 
 function handle.ping(sock_id)

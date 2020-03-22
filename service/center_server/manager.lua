@@ -12,12 +12,14 @@ local methods = {
 }
 
 local manager = {
+    debug = false,
     servername = "",   -- 服务名字
 }
 
-function manager.start(servername)
+function manager.start(servername, debug)
     assert(servername ~= nil)
     assert(type(servername) == "string")
+    manager.debug = debug
     manager.servername = servername
 end
 
@@ -27,12 +29,13 @@ end
 
 function manager.dispatch(head, content)
     assert(head ~= nil)
-    
-    -- skynet.error(string.format(manager.servername .. ":> mid=%d", head.mid))
 
-    -- 路由服务器消息
+    if manager.debug then
+        skynet.error(string.format(manager.servername .. "mid=%d", head.mid))
+    end
+    
+    -- 路由服务器消息,查询业务处理函数
     if head.mid == CENTER_CMD.MDM then
-        -- 查询业务处理函数
         local method = methods[head.sid]
         assert(method ~= nil)
         if method == nil then
@@ -40,30 +43,29 @@ function manager.dispatch(head, content)
             skynet.error(errmsg)
             return nil, errmsg
         end
+
         local ack, err = proto_map.exec(head, content, method.func)
         if err ~= nil then
             skynet.error(err)
             return nil, err 
         end
 
-        -- 不需要转发
-        if ack == nil then
-            return
-        end
-        
         -- 转发消息
-        skyhelper.send(SERVICE_TYPE.CENTER.NAME, "on_core_message", head, ack)
-        
+        if ack ~= nil then   
+            skyhelper.send(SERVICE_TYPE.CENTER.NAME, "service_message", head, ack)
+        end
+
         return
     end
 
     -- 其它服务器消息，则转发到对应服务器
     local service = route[head.mid]
-    if not service then
+    if service == nil then
         local errmsg = "unknown " .. manager.servername .. " mid=" .. tostring(head.mid) .. " command" 
         skynet.error(errmsg)
         return nil, errmsg 
     end
+    
     return skyhelper.send(service.name, "message", head, content)
 end
 

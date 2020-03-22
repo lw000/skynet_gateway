@@ -3,13 +3,13 @@ local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
 local skyhelper = require("skycommon.helper")
--- local mgr = require("center_server.manager")
 require("skynet.manager")
 require("service_config.type")
 
 local command = {
     servertype = SERVICE_TYPE.CENTER.ID,
     servername = SERVICE_TYPE.CENTER.NAME,
+    debug = false,
     port = 8081,
     protocol = "ws",
     -- agents = {},
@@ -17,17 +17,15 @@ local command = {
 }
 
 function command.START(content)
+    command.debug = content.debug
     command.port = content.port
     assert(command.port > 0)
 
-    -- mgr.start(command.servername)
-    
     command.listen()
     return 0
 end
 
 function command.STOP()
-    -- mgr.stop()
     socket.close(command.sockt_listen_id)
 end
 
@@ -40,22 +38,19 @@ function command.listen()
     socket.start(command.sockt_listen_id, function(id, addr)
         local agent = skynet.newservice("center_agent")
         skynet.send(agent, "lua", "start", id, command.protocol, addr, {
+            debug = command.debug,
             servername = command.servername,
             center_server = skynet.self(),
         })
     end)
 end
 
--- function command.MESSAGE(head, content)
---     assert(head ~= nil and type(head)== "table")
---     assert(content ~= nil and type(content)== "table")
--- 	return mgr.dispatch(head, content)
--- end
-
-function command.ON_CORE_MESSAGE(head, content)
+function command.SERVICE_MESSAGE(head, content)
     assert(head ~= nil and type(head)== "table")
-    -- dump(head, command.servername .. ".head")
-    skyhelper.send(head.serviceId, "on_message", head, content)
+    if command.debug then
+        dump(head, command.servername .. ".head")
+    end
+    skyhelper.send(head.serviceId, "service_message", head, content)
 end
 
 local function dispatch()

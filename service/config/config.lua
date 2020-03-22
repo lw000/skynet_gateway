@@ -1,14 +1,30 @@
 local config = {
     -- 调试环境
     debug = true,
-    -- 中心服debug端口
-    centerDebugPort = 8000,
-    -- 中心服端口
-    centerPort = 9900,
-    -- 网关debug端口
-    gateDebugPort = 8001,
-    -- 网关服务端口
-    gatePort = 9948,
+    -- 中心服配置
+    center = {
+        -- 调试环境
+        debug = false,
+        -- 中心服debug端口
+        debugPort = 8000,
+        -- 中心服端口
+        port = 9900,
+    },
+
+    -- 网关服配置
+    gate = {
+        -- 调试环境
+        debug = false,
+        -- 网关debug端口
+        debugPort = 8001,
+        -- 网关服务端口
+        port = 9948,
+        -- 中心服地址
+        centerIP= "127.0.0.1",
+        -- 中心服端口
+        centerPort = 9900,
+    },
+   
     -- db配置
     db = {
         host = "192.168.0.102",

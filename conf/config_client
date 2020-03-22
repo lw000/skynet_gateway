@@ -1,6 +1,6 @@
-include "config.path"
+include "config_client.path"
  
-thread = 4
+thread = 8
 -- 启动的第一服务及参数，默认为snlua bootstrap。
 -- 表示启动名为bootstrap的Lua服务，即service/bootstrap.lua。
 bootstrap = "snlua bootstrap"

@@ -4,7 +4,7 @@ local conf = require("config.config")
 require("common.export")
 
 local function onStart()
-    skynet.newservice("debug_console", conf.centerDebugPort)
+    skynet.newservice("debug_console", conf.center.debugPort)
     
     -- DB服务
     local db_server_id = skynet.newservice("db_server")
@@ -32,10 +32,7 @@ local function onStart()
 
     -- 中心F
     local center_server_id = skynet.newservice("center_server")
-    local ret, err = skynet.call(center_server_id, "lua", "start", 
-    {
-        port = conf.centerPort,
-    })
+    local ret, err = skynet.call(center_server_id, "lua", "start", conf.center)
     if err then
         skynet.error(ret, err)
         return
