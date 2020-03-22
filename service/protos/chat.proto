@@ -11,5 +11,6 @@ message ChatMessage {
 
 // 响应聊天信息
 message AckChatMessage {
-    optional sint32 result = 1;      // 操作结果: 0-成功; 非0-失败
+    optional int32 from = 1;            // 发送者
+    optional sint32 result = 2;         // 操作结果: 0-成功; 非0-失败
 }

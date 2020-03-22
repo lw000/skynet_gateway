@@ -1,11 +1,11 @@
 include "config.path"
  
-thread = 4
+thread = 8
 -- 启动的第一服务及参数，默认为snlua bootstrap。
 -- 表示启动名为bootstrap的Lua服务，即service/bootstrap.lua。
 bootstrap = "snlua bootstrap"
  
-harbor = 1
+harbor = 0
 
 -- main script
 start = "main_center"
@@ -18,6 +18,6 @@ logpath = "."
 -- daemon
 --daemon = "skynet.pid"
 
-address = "127.0.0.1:10001"
-master = "127.0.0.1:10000"
-standalone = "0.0.0.0:10000"
+--address = "127.0.0.1:10001"
+--master = "127.0.0.1:10000"
+--standalone = "0.0.0.0:10000"

@@ -2,37 +2,41 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local websocket = require("http.websocket")
 local packet = require("network.packet")
+local mgr = require("center_server.manager")
 local skyhelper = require("skycommon.helper")
 require("skynet.manager")
 require("service_config.type")
 require("proto_map.proto_map")
 
 local handle = {
-    name = "gate_server_agent",
+    name = "center_server.agent",
     sock_id = -1,
     debug = false,
-    -- center_server_id = -1,
-    -- gate_server_id = -1,
+    center_server = -1,
+    clientId = 0,
 }
 
 function handle.START(sock_id, protocol, addr, content)
-    -- handle.center_server_id = content.center_server_id
-    -- handle.gate_server_id = content.gate_server_id
-
+    handle.servername = content.servername
+    handle.center_server = content.center_server
     local ok, err = websocket.accept(sock_id, handle, protocol, addr)
     if err then
         skynet.error(err)
         return 1, "websocket.accept fail"
     end
-    
+
+    mgr.start(handle.name)
+
     return 0
 end
 
 function handle.STOP()
-
+    mgr.stop()
 end
 
 function handle.ON_MESSAGE(head, content)
+    -- dump(head, handle.name .. ".head")
+    -- dump(content, handle.name .. ".content")
     handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content)
 end
 
@@ -85,7 +89,8 @@ function handle.message(sock_id, msg)
     local head = {
         mid = pk:mid(),
         sid = pk:sid(),
-        clientId = skynet.self(),
+        clientId = clientId,
+        serviceId = skynet.self(),
     }
 
     -- 内容
@@ -93,10 +98,11 @@ function handle.message(sock_id, msg)
         data = pk:data()
     }
 
-    local forwardMessage = function(sock_id, head, content)
-        skyhelper.send(SERVICE_TYPE.CENTER.NAME, "message", head, content)
-    end
-    skynet.fork(forwardMessage, sock_id, head, content)
+    -- dump(head, handle.name .. ".head")
+    -- dump(content, handle.name .. ".content")
+
+    -- 消息分发
+    mgr.dispatch(head, content)
 end
 
 function handle.ping(sock_id)
@@ -156,7 +162,7 @@ local function dispatch()
             end
         end
     )
-    skynet.register(".agent")
+    skynet.register(".center_agent")
 end
 
 skynet.start(dispatch)

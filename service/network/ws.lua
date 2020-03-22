@@ -12,7 +12,6 @@ function WSClient:ctor()
     self._path = ""
     self._heartbeattime = 30 -- 心跳时间
     self._timeout = 100 * 15 -- 网络连接超时时间
-    self._serverId = 0
     self._msgswitch = {}
     self._on_message = nil
     self._on_error = nil
@@ -114,6 +113,10 @@ function WSClient:registerService(mid, sid, content, fn)
 end
 
 function WSClient:send(mid, sid, content, fn)
+    return self:sendWithClientId(mid, sid, self._wsid, content, fn)
+end
+
+function WSClient:sendWithClientId(mid, sid, clientId, content, fn)
     if not self._open then
         skynet.error("websocket is closed")
         return 1
@@ -135,7 +138,7 @@ function WSClient:send(mid, sid, content, fn)
     end
 
     local pk = packet:new()
-    pk:pack(mid, sid, self._wsid, content)
+    pk:pack(mid, sid, clientId, content)
     if pk:data() == nil then
         skynet.error("data is nil")
         return 1
@@ -203,12 +206,12 @@ function WSClient:loop_read()
             if sids and sids.fn then
                 skynet.fork(sids.fn, pk)
             else
-                if self._onMessage then
+                if self._on_message then
                     skynet.fork(self._on_message, pk)
                 end
             end
         else
-            if self._onMessage then
+            if self._on_message then
                 skynet.fork(self._on_message, pk)
             end
         end
@@ -219,14 +222,6 @@ function WSClient:dubug(debug)
     assert(debug ~= nil)
     assert(type(debug) == "boolean")
     self._debug = debug
-end
-
-function WSClient:set_serverId(serverId)
-    self._serverId = serverId
-end
-
-function WSClient:serverId()
-    return self._serverId
 end
 
 function WSClient:close()

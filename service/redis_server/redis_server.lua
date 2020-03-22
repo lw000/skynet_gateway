@@ -2,7 +2,7 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
 local redis = require("skynet.db.redis")
-local redismgr = require("redis_server.manager")
+local mgr = require("redis_server.manager")
 require("skynet.manager")
 require("common.export")
 require("service_config.type")
@@ -29,7 +29,7 @@ function command.START(conf)
 	
 	command.running = true
 
-	redismgr.start(command.servername)
+	mgr.start(command.servername)
 
 	-- 定时同步数据到dbserver
 	skynet.fork(
@@ -50,7 +50,7 @@ end
 function command.STOP()
 	command.running = false
 	
-	redismgr.stop()
+	mgr.stop()
 
 	command.redisConn:disconnect()
 	command.redisdb = nil
@@ -62,7 +62,7 @@ end
 function command.MESSAGE(head, content)
 	assert(head ~= nil and type(head) == "table")
     assert(content ~= nil and type(content) == "table")
-	return redismgr.dispatch(command.redisConn, head, content)
+	return mgr.dispatch(command.redisConn, head, content)
 end
 
 -- 定时同步数据到数据库

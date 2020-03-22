@@ -10,12 +10,10 @@ local logic = {
 function logic.onReqRegist(dbconn, head, content)
     -- dump(head, "head")
     dump(content, "reqRegist")
-
-    local reply = {
+    local reply ={
         result = 0,
-        errmsg = "登录成功",
+        errmsg = "注册成功",
     }
-
     return reply
 end
 
@@ -24,15 +22,37 @@ function logic.onReqLogin(dbconn, head, content)
     -- dump(head, "head")
     dump(content, "reqLogin")
 
-    local reply = {
-        result = 0,
-        userInfo = {
-            userId = 10000,
-            score = 1000,
-        },
-        errmsg = "登录成功",
-    }
-    return reply
+    if content.account == "levi_0" then
+        local reply = {
+            result = 0,
+            userInfo = {
+                userId = 10000,
+                score = 1000,
+            },
+            errmsg = "登录成功",
+        }
+        return reply
+    elseif content.account == "levi_1" then
+        local reply = {
+            result = 0,
+            userInfo = {
+                userId = 10001,
+                score = 1000,
+            },
+            errmsg = "登录成功",
+        }
+        return reply
+    else
+        local reply = {
+            result = 0,
+            userInfo = {
+                userId = 1000,
+                score = 1000,
+            },
+            errmsg = "登录成功",
+        }
+        return reply
+    end
 end
 
 -- 记录请求日志

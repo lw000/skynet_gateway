@@ -1,14 +1,13 @@
 local skynet = require("skynet")
 local skyhelper = require("skycommon.helper")
-local logic = require("lobby_server.logic")
+local logic = require("chat_server.logic")
 require("common.export")
 require("service_config.type")
 require("proto_map.proto_map")
 
 -- 业务处理接口映射表
 local methods = {
-    [LOBBY_CMD.SUB.REGIST] = {func=logic.onReqRegist, desc="请求登录"},
-    [LOBBY_CMD.SUB.LOGON] = {func=logic.onReqLogin, desc="请求登录"},
+    [CHAT_CMD.SUB.CHAT] = {func=logic.onChat, desc="聊天信息"}
 }
 
 local manager = {
@@ -31,7 +30,7 @@ function manager.dispatch(head, content)
     -- 查询业务处理函数
     local method = methods[head.sid]
     assert(method ~= nil)
-    if not method then
+    if method == nil then
         local errmsg = "unknown " .. manager.servername .. " [sid=" .. tostring(head.sid) .. "] command"
         skynet.error(errmsg)
         return nil, errmsg
@@ -42,7 +41,7 @@ function manager.dispatch(head, content)
         skynet.error(err)
         return nil, err 
     end
-    
+
     -- 不需要转发
     if ack == nil then
         return

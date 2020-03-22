@@ -1,10 +1,12 @@
 local config = {
     -- 调试环境
     debug = true,
-    -- debug端口
-    debugPort = 8000,
-    -- 中心F服务端口
+    -- 中心服debug端口
+    centerDebugPort = 8000,
+    -- 中心服端口
     centerPort = 9900,
+    -- 网关debug端口
+    gateDebugPort = 8001,
     -- 网关服务端口
     gatePort = 9948,
     -- db配置

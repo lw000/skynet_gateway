@@ -30,7 +30,9 @@ local msgs_switch = {
     }
 }
 
-function command.START(scheme, host)
+function command.START(scheme, host, content)
+    command.account = content.account
+    command.password = content.password
     command.scheme = scheme
     command.host = host
     command.client:handleMessage(command.message)
@@ -51,14 +53,14 @@ end
 
 -- 注册账号
 function command.regist()
-    local reqLogin = functor.encode_ReqRegist(
+    local reqLogin = functor.pack_ReqRegist(
     {
-        account = "levi",
-        password = "123456",
+        account = command.account,
+        password = command.password,
     })
 
     command.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(pk)
-        local data = functor.decode_AckRegist(pk:data())
+        local data = functor.unpack_AckRegist(pk:data())
         dump(data, "AckRegist")
         command.logon()
     end)
@@ -66,31 +68,31 @@ end
 
 -- 登录账号
 function command.logon()
-    local reqLogin = functor.encode_ReqLogin(
+    local reqLogin = functor.pack_ReqLogin(
     {
-        account = "levi",
-        password = "123456",
+        account = command.account,
+        password = command.password,
     })
 
     command.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(pk)
-        local data = functor.decode_AckLogin(pk:data())
+        local data = functor.unpack_AckLogin(pk:data())
         dump(data, "AckLogin")
-
+        
         -- 测试发送消息
-        skynet.fork(command.test)
+        skynet.fork(command.test, data.userInfo.userId)
     end)
 end
 
-function command.test()
+function command.test(userId)
     while (command.running) do
-        local chatMessage = functor.encode_ChatMessage(
+        local chatMessage = functor.pack_ChatMessage(
         {
-            from = 10,
+            from = userId,
             to = 11,
             content = "hello"
         })
-        command.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.CHAT, chatMessage, function(pk)
-            local data = functor.decode_AckChatMessage(pk:data())
+        command.client:send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(pk)
+            local data = functor.unpack_AckChatMessage(pk:data())
             dump(data, "AckChatMessage")
             -- skynet.error("result=" .. tostring(data.result))
         end)

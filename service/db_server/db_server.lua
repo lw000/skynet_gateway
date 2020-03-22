@@ -2,7 +2,7 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
 local database = require("db_server.database.database")
-local dbmgr = require("db_server.manager")
+local mgr = require("db_server.manager")
 require("skynet.manager")
 require("common.export")
 require("service_config.type")
@@ -38,15 +38,14 @@ function command.START(conf)
         return 1, command.servername .. " fail"
     end
 
-    dbmgr.start(command.servername)
+    mgr.start(command.servername)
     return 0
 end
 
 -- 服务停止·接口
 function command.STOP()
+    mgr.stop()
 
-    dbmgr.stop()
-    
     database.close(command.dbconn)
     command.dbconn = nil
     return 0
@@ -56,7 +55,7 @@ end
 function command.MESSAGE(head, content)
     assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
-    return dbmgr.dispatch(command.dbconn, head, content)
+    return mgr.dispatch(command.dbconn, head, content)
 end
 
 local function dispatch()

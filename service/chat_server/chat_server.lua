@@ -1,14 +1,14 @@
 package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
-local mgr = require("lobby_server.manager")
+local mgr = require("chat_server.manager")
 require("skynet.manager")
 require("common.export")
 require("service_config.type")
 
 local command = {
-	servicetype = SERVICE_TYPE.LOBBY.ID, 	-- 服务类型
-	servername = SERVICE_TYPE.LOBBY.NAME,  	-- 服务名
+	servicetype = SERVICE_TYPE.CHAT.ID, 	-- 服务类型
+	servername = SERVICE_TYPE.CHAT.NAME,  	-- 服务名
 }
 
 function command.START()
