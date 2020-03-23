@@ -63,7 +63,7 @@ function CMD.regist()
 
     CMD.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(pk)
         local data = functor.unpack_AckRegist(pk:data())
-        dump(data, "AckRegist")
+        -- dump(data, "AckRegist")
         CMD.logon()
     end)
 end
@@ -78,7 +78,7 @@ function CMD.logon()
 
     CMD.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(pk)
         local data = functor.unpack_AckLogin(pk:data())
-        dump(data, "AckLogin")
+        -- dump(data, "AckLogin")
         
         -- 测试发送消息
         skynet.fork(CMD.test, data.userInfo.userId)
@@ -95,7 +95,7 @@ function CMD.test(userId)
         })
         CMD.client:send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(pk)
             local data = functor.unpack_AckChatMessage(pk:data())
-            dump(data, "AckChatMessage")
+            -- dump(data, "AckChatMessage")
         end)
 
         skynet.sleep(100)
@@ -113,8 +113,6 @@ function CMD.alive()
         local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
         if err ~= nil then
             skynet.error(ok, err)
-        else
-            CMD.registerService()
         end 
     end
 end

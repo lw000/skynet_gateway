@@ -11,13 +11,15 @@ local methods = {
 }
 
 local manager = {
+    debug = false,
     servername = "",   -- 服务名字
 }
 
-function manager.start(servername)
+function manager.start(servername, debug)
     assert(servername ~= nil)
     assert(type(servername) == "string")
     manager.servername = servername
+    manager.debug = debug
 end
 
 function manager.stop()
@@ -25,8 +27,10 @@ function manager.stop()
 end
 
 function manager.dispatch(head, content)
-    -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
-    
+    if manager.debug then
+        skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
+    end
+
     -- 查询业务处理函数
     local method = methods[head.sid]
     assert(method ~= nil)

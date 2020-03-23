@@ -15,6 +15,6 @@ luaservice = root.."lib/service/?.lua;"..root.."service/?.lua;"
     ..root.."service/center_server/?.lua;"
     ..root.."service/lobby_server/?.lua;"
     ..root.."service/db_server/?.lua;"
-    ..root.."service/chat_server/?.lua"
+    ..root.."service/chat_server/?.lua;"
  
 lualoader = root.."lib/lualib/loader.lua"

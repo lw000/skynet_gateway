@@ -1,6 +1,6 @@
 local skynet = require("skynet")
 local skyhelper = require("skycommon.helper")
-local logic = require("lobby_server.logic")
+local logic = require("lobby_server.lobby_logic")
 require("common.export")
 require("service_config.type")
 require("proto_map.proto_map")
@@ -13,12 +13,14 @@ local methods = {
 
 local manager = {
     servername = "",   -- 服务名字
+    debug = false,
 }
 
-function manager.start(servername)
+function manager.start(servername, debug)
     assert(servername ~= nil)
     assert(type(servername) == "string")
     manager.servername = servername
+    manager.debug = debug
 end
 
 function manager.stop()
@@ -26,8 +28,10 @@ function manager.stop()
 end
 
 function manager.dispatch(head, content)
-    -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
-    
+    if manager.debug then
+        skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
+    end
+ 
     -- 查询业务处理函数
     local method = methods[head.sid]
     assert(method ~= nil)

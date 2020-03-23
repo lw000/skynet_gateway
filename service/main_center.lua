@@ -16,7 +16,7 @@ local function onStart()
 
     -- 大厅服务
     local lobby_server_id = skynet.newservice("lobby_server")
-    local ret, err = skynet.call(lobby_server_id, "lua", "start")
+    local ret, err = skynet.call(lobby_server_id, "lua", "start", conf.lobby)
     if err then
         skynet.error(ret, err)
         return
@@ -24,7 +24,7 @@ local function onStart()
 
     -- 聊天服务
     local chat_server_id = skynet.newservice("chat_server")
-    local ret, err = skynet.call(chat_server_id, "lua", "start")
+    local ret, err = skynet.call(chat_server_id, "lua", "start", conf.chat)
     if err then
         skynet.error(ret, err)
         return

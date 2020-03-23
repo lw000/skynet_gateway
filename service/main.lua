@@ -13,8 +13,6 @@ require("common.export")
 -- )
 
 local function onStart()
-    skynet.newservice("debug_console", conf.gateDebugPort)
-
     -- DB服务
     local db_server_id = skynet.newservice("db_server")
     local ret, err = skynet.call(db_server_id, "lua", "start", conf.db)
@@ -25,7 +23,7 @@ local function onStart()
 
     -- 大厅服务
     local lobby_server_id = skynet.newservice("lobby_server")
-    local ret, err = skynet.call(lobby_server_id, "lua", "start")
+    local ret, err = skynet.call(lobby_server_id, "lua", "start", conf.lobby)
     if err then
         skynet.error(ret, err)
         return
@@ -33,7 +31,7 @@ local function onStart()
 
     -- 聊天服务
     local chat_server_id = skynet.newservice("chat_server")
-    local ret, err = skynet.call(chat_server_id, "lua", "start")
+    local ret, err = skynet.call(chat_server_id, "lua", "start", conf.chat)
     if err then
         skynet.error(ret, err)
         return
@@ -41,10 +39,7 @@ local function onStart()
 
     -- 中心F
     local center_server_id = skynet.newservice("center_server")
-    local ret, err = skynet.call(center_server_id, "lua", "start", 
-    {
-        port = conf.centerPort,
-    })
+    local ret, err = skynet.call(center_server_id, "lua", "start", conf.center)
     if err then
         skynet.error(ret, err)
         return
@@ -52,12 +47,7 @@ local function onStart()
 
     -- 网关服
     local gate_server_id = skynet.newservice("gate_server")
-    local ret, err = skynet.call(gate_server_id, "lua", "start", 
-    {
-        port = conf.gatePort,
-        centerPort = conf.centerPort,
-        -- center_server_id = center_server_id,
-    })
+    local ret, err = skynet.call(gate_server_id, "lua", "start", conf.gate)
     if err then
         skynet.error(ret, err)
         return

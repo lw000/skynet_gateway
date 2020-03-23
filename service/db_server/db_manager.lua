@@ -1,5 +1,5 @@
 local skynet = require("skynet")
-local logic = require("db_server.logic")
+local logic = require("db_server.db_logic_server_func")
 require("common.export")
 require("service_config.type")
 require("service_config.cmd")
@@ -13,12 +13,14 @@ local methods = {
 
 local manager = {
     servername = "",   -- 服务名字
+    debug = false,
 }
 
-function manager.start(servername)
+function manager.start(servername, debug)
     assert(servername ~= nil)
     assert(type(servername) == "string")
     manager.servername = servername
+    manager.debug = debug
 end
 
 function manager.stop()
@@ -28,7 +30,9 @@ end
 function manager.dispatch(dbconn, head, content)
     assert(dbconn ~= nil)
 
-    -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
+    if manager.debug then
+        skynet.error(string.format(manager.servername .. " mid=%d sid=%d", head.mid, head.sid))
+    end
 
     -- 查询业务处理函数
     local method = methods[head.sid]

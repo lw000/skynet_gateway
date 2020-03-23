@@ -14,6 +14,5 @@ cpath = root.."lib/cservice/?.so"
 luaservice = root.."lib/service/?.lua;"..root.."service/?.lua;"
     ..root.."service/center_server/?.lua;"
     ..root.."service/gate_server/?.lua;"
-    ..root.."service/gate_server/backend/?.lua;"
  
 lualoader = root.."lib/lualib/loader.lua"

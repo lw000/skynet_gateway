@@ -7,14 +7,17 @@ require("common.export")
 require("service_config.type")
 
 local CMD = {
+    debug = false,
 	servicetype = SERVICE_TYPE.CHAT.ID, 	-- 服务类型
 	servername = SERVICE_TYPE.CHAT.NAME,  	-- 服务名
 }
 
-function CMD.start()
-	math.randomseed(os.time())
+function CMD.start(content)
+    math.randomseed(os.time())
+    
+    CMD.debug = content.debug
 
-	mgr.start(CMD.servername)
+	mgr.start(CMD.servername, CMD.debug)
 
     return 0
 end

@@ -1,17 +1,15 @@
 local skynet = require("skynet")
 local cjson = require("cjson")
-local database = require("db_server.database.database")
 require("common.export")
 
 local logic = {
-}
 
-local userId_index = 10000
+}
 
 -- 请求注册
 function logic.onReqRegist(dbconn, head, content)
     -- dump(head, "head")
-    dump(content, "reqRegist")
+    -- dump(content, "reqRegist")
     local reply = {
         result = 0,
         errmsg = "注册成功",
@@ -19,10 +17,13 @@ function logic.onReqRegist(dbconn, head, content)
     return reply
 end
 
+
+local userId_index = 10000
+
 -- 请求登录
 function logic.onReqLogin(dbconn, head, content)
     -- dump(head, "head")
-    dump(content, "reqLogin")
+    -- dump(content, "reqLogin")
     userId_index = userId_index + 1
     local reply = {
         result = 0,

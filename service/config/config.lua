@@ -1,6 +1,4 @@
 local config = {
-    -- 调试环境
-    debug = true,
     -- 中心服配置
     center = {
         -- 调试环境
@@ -24,9 +22,24 @@ local config = {
         -- 中心服端口
         centerPort = 9900,
     },
-   
+    
+    -- 聊天服
+    chat = {
+        -- 调试环境
+        debug = false,
+    },
+
+    -- 大厅服
+    lobby = {
+        -- 调试环境
+        debug = false,
+    },
+    
     -- db配置
     db = {
+        -- 调试环境
+        debug = false,
+
         host = "127.0.0.1",
         port = 3306,
         database = "test",
@@ -36,6 +49,9 @@ local config = {
     },
     --redis配置
     redis = {
+        -- 调试环境
+        debug = false,
+
         host = "127.0.0.1",
         port = 6379,
         db = 0,
