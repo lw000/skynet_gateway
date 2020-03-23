@@ -25,7 +25,7 @@ local CMD = {
     code=0成功，非零失败
     err 错误消息
 ]]
-function CMD.START(conf)
+function CMD.start(conf)
     assert(conf ~= nil)
     
     -- 设置随机种子
@@ -43,7 +43,7 @@ function CMD.START(conf)
 end
 
 -- 服务停止·接口
-function CMD.STOP()
+function CMD.stop()
     mgr.stop()
 
     database.close(CMD.dbconn)
@@ -52,7 +52,7 @@ function CMD.STOP()
 end
 
 -- DB服务·消息处理接口
-function CMD.MESSAGE(head, content)
+function CMD.server_message(head, content)
     assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
     return mgr.dispatch(CMD.dbconn, head, content)
@@ -62,13 +62,12 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            cmd = cmd:upper()
             local f = CMD[cmd]
             assert(f)
-            if f then
-                skynet.ret(skynet.pack(f(...)))
+            if session == 0 then
+                f(...)
             else
-                skynet.error(string.format(CMD.servername .. " unknown CMD %s", tostring(cmd)))
+                skynet.ret(skynet.pack(f(...)))
             end
         end
     )

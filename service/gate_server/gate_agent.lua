@@ -7,19 +7,21 @@ require("skynet.manager")
 require("service_config.type")
 require("proto_map.proto_map")
 
+local gate_server_id = -1
+
+local backend_server_id = -1
+
 local handle = {
     name = "gate_server.agent",
     debug = false,
     sock_id = -1,
-    gate_server = -1,
-    backend_server = -1,
 }
 
-function handle.START(sock_id, protocol, addr, content)
+function handle.start(sock_id, protocol, addr, content)
     -- dump(content, "content")
     handle.debug = content.debug
-    handle.gate_server = content.gate_server
-    handle.backend_server = content.backend_server
+    gate_server_id = content.gate_server_id
+    backend_server_id = content.backend_server_id
 
     handle.name = string.format("%s.%d", handle.name, skynet.self())
 
@@ -32,11 +34,11 @@ function handle.START(sock_id, protocol, addr, content)
     return 0
 end
 
-function handle.STOP()
+function handle.stop()
 
 end
 
-function handle.SERVICE_MESSAGE(head, content)
+function handle.service_message(head, content)
     -- dump(head, handle.name .. ".head")
     skynet.fork(function (head, content)
         handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content.data)
@@ -107,7 +109,7 @@ function handle.message(sock_id, msg)
             -- dump(head, handle.name .. ".head")
             -- dump(content, handle.name .. ".content")
         end
-        skyhelper.send(handle.backend_server, "service_message", head, content)
+        skyhelper.send(backend_server_id, "service_message", head, content)
     end
     skynet.fork(forwardMessage, head, content)
 end
@@ -159,13 +161,12 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            cmd = cmd:upper()
             local f = handle[cmd]
             assert(f)
-            if f then
-                skynet.ret(skynet.pack(f(...)))
+            if session == 0 then
+                f(...)
             else
-                skynet.error(string.format(handle.name .. " unknown command %s", tostring(cmd)))
+                skynet.ret(skynet.pack(f(...)))
             end
         end
     )

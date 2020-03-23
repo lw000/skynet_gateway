@@ -16,7 +16,7 @@ local CMD = {
     sockt_listen_id = -1,
 }
 
-function CMD.START(content)
+function CMD.start(content)
     CMD.debug = content.debug
     CMD.port = content.port
     assert(CMD.port > 0)
@@ -25,7 +25,7 @@ function CMD.START(content)
     return 0
 end
 
-function CMD.STOP()
+function CMD.stop()
     socket.close(CMD.sockt_listen_id)
 end
 
@@ -45,7 +45,7 @@ function CMD.listen()
     end)
 end
 
-function CMD.SERVICE_MESSAGE(head, content)
+function CMD.service_message(head, content)
     assert(head ~= nil and type(head)== "table")
     if CMD.debug then
         dump(head, CMD.servername .. ".head")
@@ -57,13 +57,12 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            cmd = cmd:upper()
             local f = CMD[cmd]
             assert(f)
-            if f then
-                skynet.ret(skynet.pack(f(...)))
+            if session == 0 then
+                f(...)
             else
-                skynet.error(string.format(CMD.servername .. " unknown CMD %s", tostring(cmd)))
+                skynet.ret(skynet.pack(f(...)))
             end
         end
     )

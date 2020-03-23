@@ -66,7 +66,7 @@ function manager.dispatch(head, content)
         return nil, errmsg 
     end
     
-    return skyhelper.send(service.name, "message", head, content)
+    return skyhelper.send(service.name, "server_message", head, content)
 end
 
 return manager

@@ -16,7 +16,7 @@ local CMD = {
 	conf = nil, 						-- redis配置
 }
 
-function CMD.START(conf)
+function CMD.start(conf)
 	assert(conf ~= nil)
 	CMD.conf = conf
 	CMD.redisConn = redis.connect(CMD.conf)
@@ -47,7 +47,7 @@ function CMD.START(conf)
     return 0
 end
 
-function CMD.STOP()
+function CMD.stop()
 	CMD.running = false
 	
 	mgr.stop()
@@ -59,7 +59,7 @@ function CMD.STOP()
 end
 
 -- REDIS服务·消息处理接口
-function CMD.MESSAGE(head, content)
+function CMD.server_message(head, content)
 	assert(head ~= nil and type(head) == "table")
     assert(content ~= nil and type(content) == "table")
 	return mgr.dispatch(CMD.redisConn, head, content)
@@ -84,13 +84,12 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            cmd = cmd:upper()
             local f = CMD[cmd]
             assert(f)
-            if f then
-                skynet.ret(skynet.pack(f(...)))
+            if session == 0 then
+                f(...)
             else
-                skynet.error(string.format(CMD.servername .. " unknown CMD %s", tostring(cmd)))
+                skynet.ret(skynet.pack(f(...)))
             end
         end
     )

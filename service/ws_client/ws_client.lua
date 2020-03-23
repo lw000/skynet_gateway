@@ -31,7 +31,7 @@ local msgs_switch = {
     }
 }
 
-function CMD.START(scheme, host, content)
+function CMD.start(scheme, host, content)
     CMD.account = content.account
     CMD.password = content.password
     CMD.scheme = scheme
@@ -63,7 +63,7 @@ function CMD.regist()
 
     CMD.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(pk)
         local data = functor.unpack_AckRegist(pk:data())
-        -- dump(data, "AckRegist")
+        dump(data, "AckRegist")
         CMD.logon()
     end)
 end
@@ -78,7 +78,7 @@ function CMD.logon()
 
     CMD.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(pk)
         local data = functor.unpack_AckLogin(pk:data())
-        -- dump(data, "AckLogin")
+        dump(data, "AckLogin")
         
         -- 测试发送消息
         skynet.fork(CMD.test, data.userInfo.userId)
@@ -95,7 +95,7 @@ function CMD.test(userId)
         })
         CMD.client:send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(pk)
             local data = functor.unpack_AckChatMessage(pk:data())
-            -- dump(data, "AckChatMessage")
+            dump(data, "AckChatMessage")
         end)
 
         skynet.sleep(100)
@@ -117,34 +117,6 @@ function CMD.alive()
             CMD.registerService()
         end 
     end
-
-    -- local on_alive = function()
-    --     while CMD.running do
-    --         local open = CMD.client:open()
-    --         if not open then
-    --             skynet.error("reconnect to server")
-    --             local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
-    --             if err then
-    --                 skynet.error(ok, err)
-    --             end
-    --         end
-    --         skynet.sleep(100 * 3)
-    --     end
-    -- end
-
-    -- local on_error = function(err)
-    --     skynet.error(err)
-    -- end
-
-    -- skynet.fork(
-    --     function()
-    --         local ok = xpcall(on_alive, on_error)
-    --         if not ok then
-    --             -- body
-    --         end
-    --         skynet.error("alive exit")
-    --     end
-    -- )
 end
 
 function CMD.message(pk)
@@ -174,13 +146,12 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            cmd = cmd:upper()
             local f = CMD[cmd]
             assert(f)
-            if f then
-                skynet.ret(skynet.pack(f(...)))
+            if session == 0 then
+                f(...)
             else
-                skynet.error(string.format("unknown CMD %s", tostring(cmd)))
+                skynet.ret(skynet.pack(f(...)))
             end
         end
     )

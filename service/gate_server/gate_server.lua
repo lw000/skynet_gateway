@@ -5,6 +5,8 @@ local service = require("skynet.service")
 require("skynet.manager")
 require("service_config.type")
 
+local backend_servers = {}        -- 后端转发服务ID
+
 local CMD = {
     servertype = SERVICE_TYPE.GATE.ID,
     servername = SERVICE_TYPE.GATE.NAME,
@@ -15,10 +17,9 @@ local CMD = {
     protocol = "ws",
     -- agents = {},
     sockt_listen_id = -1,
-    backend_servers = {},        -- 后端转发服务ID
 }
 
-function CMD.START(content)
+function CMD.start(content)
     CMD.debug = content.debug
     CMD.port = content.port
     CMD.centerPort = content.centerPort
@@ -28,17 +29,18 @@ function CMD.START(content)
     local host = string.format("%s:%d", CMD.centerIP, CMD.centerPort)
     for i= 0, 5 do
         local backend_server = skynet.newservice("backend")
-        CMD.backend_servers[i] = backend_server
+        backend_servers[i] = backend_server
         skynet.call(backend_server, "lua", "start", "ws", host, {
             debug = content.debug,
-            gate_server = skynet.self(),
+            gate_server_id = skynet.self(),
         })
     end
+    dump(backend_servers, "CMD.backend_servers")
     CMD.listen()
     return 0
 end
 
-function CMD.STOP()
+function CMD.stop()
     backend.stop()
     socket.close(CMD.sockt_listen_id)
 end
@@ -52,19 +54,19 @@ function CMD.listen()
     socket.start(CMD.sockt_listen_id, function(id, addr)
         local agent = skynet.newservice("gate_agent")
         -- CMD.agents[agent] = agent
-        -- dump(CMD.backend_servers, "CMD.backend_servers")
-        local backend_server_length = #CMD.backend_servers+1
-        local backendIndex = math.fmod(agent, backend_server_length)
-        local backend_server = CMD.backend_servers[backendIndex]
-        -- skynet.error(
-        --     "agent=", agent,
-        --     "backend_server_length=", backend_server_length,
-        --     "backendIndex=", backendIndex,
-        --     "backend_server=", backend_server
-        -- )
+        local backend_server_length = #backend_servers+1
+        -- local backendIndex = math.fmod(agent, backend_server_length)
+        local backendIndex = agent % backend_server_length
+        local backend_server_id = backend_servers[backendIndex]
+        skynet.error(
+            "agent=", agent,
+            "backend_servers_length=", backend_server_length,
+            "backendIndex=", backendIndex,
+            "backend_server=", backend_server_id
+        )
         skynet.send(agent, "lua", "start", id, CMD.protocol, addr, {
             debug = CMD.debug,
-            backend_server = backend_server,
+            backend_server_id = backend_server_id,
             gate_server = skynet.self(),
         })
     end)
@@ -74,17 +76,16 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            cmd = cmd:upper()
             local f = CMD[cmd]
             assert(f)
-            if f then
-                skynet.ret(skynet.pack(f(...)))
+            if session == 0 then
+                f(...)
             else
-                skynet.error(string.format(CMD.servername .. " unknown CMD %s", tostring(cmd)))
+                skynet.ret(skynet.pack(f(...)))
             end
         end
     )
-    skynet.register("gate_server")
+    skynet.register(CMD.servername)
 end
 
 skynet.start(dispatch)

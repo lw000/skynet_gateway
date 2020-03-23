@@ -5,6 +5,9 @@ local skyhelper = {}
 
 -- 参数检查
 local function check(servername, method, head)
+    -- dump(servername, "servername")
+    -- dump(method, "method")
+    -- dump(head, "head")
     assert(servername ~= nil)
     assert(method ~= nil and type(method) == "string" and method ~= "")
     assert(head ~= nil and type(head) == "table")
@@ -13,9 +16,6 @@ local function check(servername, method, head)
 end
 
 function skyhelper.send(servername, method, head, content)
-    -- dump(servername, "servername")
-    -- dump(method, "method")
-    -- dump(head, "head")
     check(servername, method, head)
     skynet.send(servername, "lua", method, head, content)
 end

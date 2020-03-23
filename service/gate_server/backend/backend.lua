@@ -9,6 +9,8 @@ require("service_config.cmd")
 require("service_config.type")
 require("proto_map.proto_func")
 
+local gate_server_id = -1
+
 local CMD = {
     name = "backend",
     scheme = "ws",
@@ -16,15 +18,14 @@ local CMD = {
     running = false,
     serverId = 0,
     aliveTime = 100*5,
-    gate_server = -1,
     client = ws:new()
 }
 
-function CMD.START(scheme, host, content)
+function CMD.start(scheme, host, content)
     CMD.scheme = scheme
     CMD.host = host
     CMD.debug = content.debug
-    CMD.gate_server = content.gate_server
+    gate_server_id = content.gate_server_id
 
     CMD.client:handleMessage(CMD.message)
     CMD.client:handleError(CMD.error)
@@ -46,11 +47,11 @@ function CMD.START(scheme, host, content)
     return 0
 end
 
-function CMD.STOP()
+function CMD.stop()
 
 end
 
-function CMD.SERVICE_MESSAGE(head, content)
+function CMD.service_message(head, content)
     -- dump(head, CMD.name .. ".head")
     -- dump(content, CMD.name .. ".content")
     skynet.fork(function (head, content)
@@ -151,13 +152,12 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            cmd = cmd:upper()
             local f = CMD[cmd]
             assert(f)
-            if f then
-                skynet.ret(skynet.pack(f(...)))
+            if session == 0 then
+                f(...)
             else
-                skynet.error(string.format("unknown CMD %s", tostring(cmd)))
+                skynet.ret(skynet.pack(f(...)))
             end
         end
     )

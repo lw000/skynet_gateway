@@ -22,6 +22,7 @@ function manager.start(servername)
 end
 
 function manager.stop()
+    
 end
 
 function manager.dispatch(dbconn, head, content)
@@ -37,35 +38,7 @@ function manager.dispatch(dbconn, head, content)
         skynet.error(errmsg)
         return nil, errmsg
     end
-
-    -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
-    
     return method.func(dbconn, head, content)
-
-    -- -- 查询业务处理函数
-    -- local method = methods[head.sid]
-    -- assert(method ~= nil)
-    -- if not method then
-    --     local errmsg = "unknown " .. manager.servername .. " [sid=" .. tostring(head.sid) .. "] command"
-    --     skynet.error(errmsg)
-    --     return nil, errmsg
-    -- end
-
-    -- local ack, err = proto_map.exec(head, content, function(head, content)
-    --     return method.func(dbconn, head, content)
-    -- end)
-
-    -- if err ~= nil then
-    --     skynet.error(err)
-    --     return nil, err 
-    -- end
-    
-    -- -- 不需要转发
-    -- if ack == nil then
-    --     return
-    -- end
-
-    -- return ack
 end
 
 return manager

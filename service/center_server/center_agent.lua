@@ -15,7 +15,7 @@ local handle = {
     center_server = -1,
 }
 
-function handle.START(sock_id, protocol, addr, content)
+function handle.start(sock_id, protocol, addr, content)
     handle.debug = content.debug
     handle.servername = content.servername
     handle.center_server = content.center_server
@@ -31,11 +31,11 @@ function handle.START(sock_id, protocol, addr, content)
     return 0
 end
 
-function handle.STOP()
+function handle.stop()
     mgr.stop()
 end
 
-function handle.SERVICE_MESSAGE(head, content)
+function handle.service_message(head, content)
     if handle.debug then
         -- dump(head, handle.name .. ".head")
         -- dump(content, handle.name .. ".content")
@@ -160,13 +160,12 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            cmd = cmd:upper()
             local f = handle[cmd]
             assert(f)
-            if f then
-                skynet.ret(skynet.pack(f(...)))
+            if session == 0 then
+                f(...)
             else
-                skynet.error(string.format(handle.name .. " unknown command %s", tostring(cmd)))
+                skynet.ret(skynet.pack(f(...)))
             end
         end
     )
