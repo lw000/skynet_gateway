@@ -38,7 +38,7 @@ function WSClient:connect(scheme, host, path, heartbeattime)
     local url = string.format("%s://%s/%s", self._scheme, self._host, self._path)
     skynet.error("ws connect to", url)
 
-    local do_connect_ws = function()
+    local do_connect = function()
         self._websocket = require "http.websocket"
         self._wsid = self._websocket.connect(url, nil, self._timeout)
     end
@@ -47,7 +47,7 @@ function WSClient:connect(scheme, host, path, heartbeattime)
         self._on_error(err)
     end
 
-    local ok = xpcall(do_connect_ws, on_error)
+    local ok = xpcall(do_connect, on_error)
     if not ok then
         return 1, "ws connect fail"
     end
@@ -56,53 +56,27 @@ function WSClient:connect(scheme, host, path, heartbeattime)
 
     self._open = true
 
-    -- 心跳定时器
-    skynet.fork(
-        function()
-            local on_heartbeat = function()
-                while self._open do
-                    skynet.sleep(100)
-                    local now = os.date("*t")
-                    -- dump(now, "当前时间")
-                    -- print("当前时间", os.date("%Y-%m-%d %H:%M:%S", os.time(now)))
-
-                    if math.fmod(now.sec, self._heartbeattime) == 0 then
-                        self:send(0x0000,0x0000,nil,function(data)
-                            skynet.error("heartbeat", os.date("%Y-%m-%d %H:%M:%S", os.time()))
-                        end)
-                    end
-                end
-            end
-
-            local on_error = function(err)
-                skynet.error(err)
-            end
-            
-            local ok = xpcall(on_heartbeat, on_error)
-            -- dump(ok, "heartbeat")
-            skynet.error("heartbeat exit")
+    --心跳处理
+    local function on_heartbeat()
+        if self._open then
+            skynet.timeout(100*self._heartbeattime, on_heartbeat)
         end
-    )
+        self:send(0x0000,0x0000,nil,function(pk)
+            skynet.error("heartbeat", os.date("%Y-%m-%d %H:%M:%S", os.time()))
+        end)
+    end
+    skynet.timeout(100*self._heartbeattime, on_heartbeat)
 
     -- 读取数据
-    skynet.fork(
-        function()
-            local ok = xpcall(function() self:loop_read() end, function(err) self._on_error(err) end)
-            -- dump(ok, "run")
-            skynet.error("websocket loop_read exit")
-            self:reset()
-        end
-    )
+    skynet.fork(function()
+        -- debug.traceback
+        local ok = xpcall(function() self:loopRead() end, function(err) self._on_error(err) end)
+        -- dump(ok, "run")
+        skynet.error("websocket loopRead exit")
+        self:reset()
+    end)
 
     return 0
-end
-
-function WSClient:registerService(mid, sid, content, fn)
-    if not self._open then
-        skynet.error("websocket is closed")
-        return 1
-    end
-    self:send(mid, sid, content, fn)
 end
 
 function WSClient:send(mid, sid, content, fn)
@@ -140,10 +114,6 @@ function WSClient:sendWithClientId(mid, sid, clientId, content, fn)
     return 0
 end
 
-function WSClient:sfd()
-    return self._wsid
-end
-
 function WSClient:open()
     return self._open
 end
@@ -155,19 +125,17 @@ end
 
 function WSClient:handleMessage(fn)
     self._on_message = fn or function(pk)
-        skynet.error("<: ", "mid=" .. pk:mid(), "sid=" .. pk:sid(), "clientId=" .. pk:clientId(), "默认·消息·函数")
+        skynet.error("mid=" .. pk:mid(), "sid=" .. pk:sid(), "clientId=" .. pk:clientId(), "默认·消息·函数")
     end
-    return 0
 end
 
 function WSClient:handleError(fn)
     self._on_error = fn or function(err)
         skynet.error(err)
     end
-    return 0
 end
 
-function WSClient:loop_read()
+function WSClient:loopRead()
     while self._open do
         local resp, close_reason = self._websocket.read(self._wsid)
         if not resp then
@@ -186,15 +154,7 @@ function WSClient:loop_read()
         local clientId = pk:clientId()
 
         if self._debug then
-            skynet.error(
-                "<: wsclient",
-                "ver=" .. ver,
-                "mid=" .. mid,
-                "sid=" .. sid,
-                "checkCode=" .. checkCode,
-                "clientId=" .. clientId,
-                "dataLen=" .. string.len(pk:data())
-            )
+            skynet.error("<: wsclient","ver=" .. ver,"mid=" .. mid,"sid=" .. sid,"checkCode=" .. checkCode,"clientId=" .. clientId,"dataLen=" .. string.len(pk:data()))
         end
 
         local mids = self._msgswitch[mid]
@@ -216,8 +176,7 @@ function WSClient:loop_read()
 end
 
 function WSClient:dubug(debug)
-    assert(debug ~= nil)
-    assert(type(debug) == "boolean")
+    assert(debug ~= nil and type(debug) == "boolean", "debug value must is boolean")
     self._debug = debug
 end
 

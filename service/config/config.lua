@@ -27,12 +27,12 @@ local config = {
    
     -- db配置
     db = {
-        host = "192.168.0.102",
+        host = "127.0.0.1",
         port = 3306,
         database = "test",
         user = "root",
-        -- password = "LEvi123!",
-        password = "lwstar",
+        password = "LEvi123!",
+        -- password = "lwstar",
     },
     --redis配置
     redis = {

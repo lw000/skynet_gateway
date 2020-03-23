@@ -47,7 +47,7 @@ end
 
 function handle.connect(sock_id)
     handle.sock_id = sock_id
-    -- skynet.error("ws connect from: " .. tostring(sock_id))
+    skynet.error("ws connect from: " .. tostring(sock_id))
 end
 
 function handle.handshake(sock_id, header, url)
@@ -87,6 +87,7 @@ function handle.message(sock_id, msg)
 
     -- 心跳消息处理
     if mid == 0 and sid == 0 then
+        skynet.error("心跳", "mid=" .. mid, "sid=" .. sid, os.date("%Y-%m-%d %H:%M:%S", os.time()))
         return
     end
 

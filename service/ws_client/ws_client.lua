@@ -12,6 +12,7 @@ local command = {
     scheme = "ws",
     host = "127.0.0.1",
     running = false,
+    aliveTime = 100*5,
     client = ws:new()
 }
 
@@ -44,7 +45,8 @@ function command.START(scheme, host, content)
     command.running = true
 
     -- 网络断线检查
-    command.alive()
+    -- command.alive()
+    skynet.timeout(command.aliveTime, command.alive)
 
     command.regist()
 
@@ -61,7 +63,7 @@ function command.regist()
 
     command.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(pk)
         local data = functor.unpack_AckRegist(pk:data())
-        dump(data, "AckRegist")
+        -- dump(data, "AckRegist")
         command.logon()
     end)
 end
@@ -76,7 +78,7 @@ function command.logon()
 
     command.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(pk)
         local data = functor.unpack_AckLogin(pk:data())
-        dump(data, "AckLogin")
+        -- dump(data, "AckLogin")
         
         -- 测试发送消息
         skynet.fork(command.test, data.userInfo.userId)
@@ -93,7 +95,7 @@ function command.test(userId)
         })
         command.client:send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(pk)
             local data = functor.unpack_AckChatMessage(pk:data())
-            dump(data, "AckChatMessage")
+            -- dump(data, "AckChatMessage")
         end)
 
         skynet.sleep(100)
@@ -101,30 +103,48 @@ function command.test(userId)
 end
 
 function command.alive()
-    local on_alive = function()
-        while command.running do
-            local open = command.client:open()
-            if not open then
-                skynet.error("reconnect to server")
-                command.client:connect(command.scheme, command.host)
-            end
-            skynet.sleep(100 * 3)
-        end
+    if command.running then
+        skynet.timeout(command.aliveTime, command.alive)
     end
 
-    local on_error = function(err)
-        skynet.error(err)
+    local open = command.client:open()
+    if not open then
+        skynet.error("reconnect to server")
+        local ok, err = command.client:connect(command.scheme, command.host)
+        if err ~= nil then
+            skynet.error(ok, err)
+        else
+            command.registerService()
+        end 
     end
 
-    skynet.fork(
-        function()
-            local ok = xpcall(on_alive, on_error)
-            if not ok then
-                -- body
-            end
-            skynet.error("alive exit")
-        end
-    )
+    -- local on_alive = function()
+    --     while command.running do
+    --         local open = command.client:open()
+    --         if not open then
+    --             skynet.error("reconnect to server")
+    --             local ok, err = command.client:connect(command.scheme, command.host)
+    --             if err then
+    --                 skynet.error(ok, err)
+    --             end
+    --         end
+    --         skynet.sleep(100 * 3)
+    --     end
+    -- end
+
+    -- local on_error = function(err)
+    --     skynet.error(err)
+    -- end
+
+    -- skynet.fork(
+    --     function()
+    --         local ok = xpcall(on_alive, on_error)
+    --         if not ok then
+    --             -- body
+    --         end
+    --         skynet.error("alive exit")
+    --     end
+    -- )
 end
 
 function command.message(pk)

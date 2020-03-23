@@ -15,6 +15,7 @@ local command = {
     debug = false,
     running = false,
     serverId = 0,
+    aliveTime = 100*5,
     gate_server = -1,
     client = ws:new()
 }
@@ -40,7 +41,7 @@ function command.START(scheme, host, content)
     command.registerService()
 
     -- 网络断线检查
-    command.alive()
+    skynet.timeout(command.aliveTime, command.alive)
     
     return 0
 end
@@ -52,7 +53,6 @@ end
 function command.SERVICE_MESSAGE(head, content)
     -- dump(head, command.name .. ".head")
     -- dump(content, command.name .. ".content")
-    -- command.client:sendWithClientId(head.mid, head.sid, head.clientId, content.data)
     skynet.fork(function (head, content)
         command.client:sendWithClientId(head.mid, head.sid, head.clientId, content.data)
     end, head, content)
@@ -65,7 +65,7 @@ function command.registerService()
             svrType = SERVICE_TYPE.GATE.ID
         }
     )
-    command.client:registerService(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, content, function(pk)
+    command.client:send(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, content, function(pk)
         local data = functor.unpack_AckRegService(pk:data())
         dump(data, "AckRegistService")
         if data.result == 0 then
@@ -76,29 +76,20 @@ end
 
 -- 网络状态是否存活
 function command.alive()
-    local on_alive = function()
-        while command.running do
-            local open = command.client:open()
-            if not open then
-                skynet.error("reconnect to server")
-                command.client:connect(command.scheme, command.host)
-                command.registerService()
-            end
-            skynet.sleep(100 * 5)
-        end
+    if command.running then
+        skynet.timeout(command.aliveTime, command.alive)
     end
 
-    local on_error = function(err)
-        skynet.error(err)
+    local open = command.client:open()
+    if not open then
+        skynet.error("reconnect to server")
+        local ok, err = command.client:connect(command.scheme, command.host)
+        if err ~= nil then
+            skynet.error(ok, err)
+        else
+            command.registerService()
+        end 
     end
-
-    skynet.fork(function()
-        local ok = xpcall(on_alive, on_error)
-        if not ok then
-            -- body
-        end
-        skynet.error("alive exit")
-    end)
 end
 
 function command.message(pk)
