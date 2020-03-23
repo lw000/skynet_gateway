@@ -12,7 +12,7 @@ require("service_config.cmd")
     db数据库服务
 ]]
 
-local command = {
+local CMD = {
     servertype = SERVICE_TYPE.DB.ID,   -- 服务类型
     servername = SERVICE_TYPE.DB.NAME,   -- 服务名
     dbconn = nil,                   -- db连接
@@ -25,37 +25,37 @@ local command = {
     code=0成功，非零失败
     err 错误消息
 ]]
-function command.START(conf)
+function CMD.START(conf)
     assert(conf ~= nil)
     
     -- 设置随机种子
     math.randomseed(os.time())
 
-    command.conf = conf
-    command.dbconn = database.open(command.conf)
-    assert(command.dbconn ~= nil)
-    if command.dbconn == nil then
-        return 1, command.servername .. " fail"
+    CMD.conf = conf
+    CMD.dbconn = database.open(CMD.conf)
+    assert(CMD.dbconn ~= nil)
+    if CMD.dbconn == nil then
+        return 1, CMD.servername .. " fail"
     end
 
-    mgr.start(command.servername)
+    mgr.start(CMD.servername)
     return 0
 end
 
 -- 服务停止·接口
-function command.STOP()
+function CMD.STOP()
     mgr.stop()
 
-    database.close(command.dbconn)
-    command.dbconn = nil
+    database.close(CMD.dbconn)
+    CMD.dbconn = nil
     return 0
 end
 
 -- DB服务·消息处理接口
-function command.MESSAGE(head, content)
+function CMD.MESSAGE(head, content)
     assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
-    return mgr.dispatch(command.dbconn, head, content)
+    return mgr.dispatch(CMD.dbconn, head, content)
 end
 
 local function dispatch()
@@ -63,16 +63,16 @@ local function dispatch()
         "lua",
         function(session, address, cmd, ...)
             cmd = cmd:upper()
-            local f = command[cmd]
+            local f = CMD[cmd]
             assert(f)
             if f then
                 skynet.ret(skynet.pack(f(...)))
             else
-                skynet.error(string.format(command.servername .. " unknown command %s", tostring(cmd)))
+                skynet.error(string.format(CMD.servername .. " unknown CMD %s", tostring(cmd)))
             end
         end
     )
-    skynet.register(command.servername)
+    skynet.register(CMD.servername)
 end
 
 skynet.start(dispatch)

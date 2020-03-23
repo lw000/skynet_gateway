@@ -9,7 +9,7 @@ require("service_config.cmd")
 require("service_config.type")
 require("proto_map.proto_func")
 
-local command = {
+local CMD = {
     name = "backend",
     scheme = "ws",
     debug = false,
@@ -20,52 +20,52 @@ local command = {
     client = ws:new()
 }
 
-function command.START(scheme, host, content)
-    command.scheme = scheme
-    command.host = host
-    command.debug = content.debug
-    command.gate_server = content.gate_server
+function CMD.START(scheme, host, content)
+    CMD.scheme = scheme
+    CMD.host = host
+    CMD.debug = content.debug
+    CMD.gate_server = content.gate_server
 
-    command.client:handleMessage(command.message)
-    command.client:handleError(command.error)
-    local ok, err = command.client:connect(scheme, host)
+    CMD.client:handleMessage(CMD.message)
+    CMD.client:handleError(CMD.error)
+    local ok, err = CMD.client:connect(scheme, host)
     if err then
         return 1, err
     end
 
-    command.running = true
+    CMD.running = true
 
-    command.name = string.format("%s.%d", command.name, skynet.self())
+    CMD.name = string.format("%s.%d", CMD.name, skynet.self())
 
     -- 注册服务
-    command.registerService()
+    CMD.registerService()
 
     -- 网络断线检查
-    skynet.timeout(command.aliveTime, command.alive)
+    skynet.timeout(CMD.aliveTime, CMD.alive)
     
     return 0
 end
 
-function command.STOP()
+function CMD.STOP()
 
 end
 
-function command.SERVICE_MESSAGE(head, content)
-    -- dump(head, command.name .. ".head")
-    -- dump(content, command.name .. ".content")
+function CMD.SERVICE_MESSAGE(head, content)
+    -- dump(head, CMD.name .. ".head")
+    -- dump(content, CMD.name .. ".content")
     skynet.fork(function (head, content)
-        command.client:sendWithClientId(head.mid, head.sid, head.clientId, content.data)
+        CMD.client:sendWithClientId(head.mid, head.sid, head.clientId, content.data)
     end, head, content)
 end
 
-function command.registerService()
+function CMD.registerService()
     local content = functor.pack_ReqRegService(
         {
-            serverId = command.serverId,
+            serverId = CMD.serverId,
             svrType = SERVICE_TYPE.GATE.ID
         }
     )
-    command.client:send(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, content, function(pk)
+    CMD.client:send(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, content, function(pk)
         local data = functor.unpack_AckRegService(pk:data())
         dump(data, "AckRegistService")
         if data.result == 0 then
@@ -75,24 +75,24 @@ function command.registerService()
 end
 
 -- 网络状态是否存活
-function command.alive()
-    if command.running then
-        skynet.timeout(command.aliveTime, command.alive)
+function CMD.alive()
+    if CMD.running then
+        skynet.timeout(CMD.aliveTime, CMD.alive)
     end
 
-    local open = command.client:open()
+    local open = CMD.client:open()
     if not open then
         skynet.error("reconnect to server")
-        local ok, err = command.client:connect(command.scheme, command.host)
+        local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
         if err ~= nil then
             skynet.error(ok, err)
         else
-            command.registerService()
+            CMD.registerService()
         end 
     end
 end
 
-function command.message(pk)
+function CMD.message(pk)
     local mid = pk:mid()
     local sid = pk:sid()
     local ver = pk:ver()
@@ -109,8 +109,8 @@ function command.message(pk)
         -- body
     end
 
-    if command.debug then
-        skynet.error(command.name .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
+    if CMD.debug then
+        skynet.error(CMD.name .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
     end
 
     -- 包头
@@ -128,16 +128,16 @@ function command.message(pk)
     }
 
     local forwardMessage = function(clientId, head, content)
-        if command.debug then
-            -- dump(head, command.name .. ".head")
-            -- dump(content, command.name .. ".content")
+        if CMD.debug then
+            -- dump(head, CMD.name .. ".head")
+            -- dump(content, CMD.name .. ".content")
         end  
         skyhelper.send(clientId, "service_message", head, content)
     end
     skynet.fork(forwardMessage, clientId, head, content)
 end
 
-function command.error(err)
+function CMD.error(err)
     skynet.error(err)
 end
 
@@ -152,12 +152,12 @@ local function dispatch()
         "lua",
         function(session, address, cmd, ...)
             cmd = cmd:upper()
-            local f = command[cmd]
+            local f = CMD[cmd]
             assert(f)
             if f then
                 skynet.ret(skynet.pack(f(...)))
             else
-                skynet.error(string.format("unknown command %s", tostring(cmd)))
+                skynet.error(string.format("unknown CMD %s", tostring(cmd)))
             end
         end
     )

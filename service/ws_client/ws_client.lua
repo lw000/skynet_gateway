@@ -8,7 +8,7 @@ require("service_config.type")
 require("proto_map.proto_map")
 require("proto_map.proto_func")
 
-local command = {
+local CMD = {
     scheme = "ws",
     host = "127.0.0.1",
     running = false,
@@ -31,69 +31,69 @@ local msgs_switch = {
     }
 }
 
-function command.START(scheme, host, content)
-    command.account = content.account
-    command.password = content.password
-    command.scheme = scheme
-    command.host = host
-    command.client:handleMessage(command.message)
-    command.client:handleError(command.error)
-    local ok, err = command.client:connect(scheme, host)
+function CMD.START(scheme, host, content)
+    CMD.account = content.account
+    CMD.password = content.password
+    CMD.scheme = scheme
+    CMD.host = host
+    CMD.client:handleMessage(CMD.message)
+    CMD.client:handleError(CMD.error)
+    local ok, err = CMD.client:connect(scheme, host)
     if err then
         return 1, "connect fail"
     end
-    command.running = true
+    CMD.running = true
 
     -- 网络断线检查
-    -- command.alive()
-    skynet.timeout(command.aliveTime, command.alive)
+    -- CMD.alive()
+    skynet.timeout(CMD.aliveTime, CMD.alive)
 
-    command.regist()
+    CMD.regist()
 
     return 0
 end
 
 -- 注册账号
-function command.regist()
+function CMD.regist()
     local reqLogin = functor.pack_ReqRegist(
     {
-        account = command.account,
-        password = command.password,
+        account = CMD.account,
+        password = CMD.password,
     })
 
-    command.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(pk)
+    CMD.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(pk)
         local data = functor.unpack_AckRegist(pk:data())
         -- dump(data, "AckRegist")
-        command.logon()
+        CMD.logon()
     end)
 end
 
 -- 登录账号
-function command.logon()
+function CMD.logon()
     local reqLogin = functor.pack_ReqLogin(
     {
-        account = command.account,
-        password = command.password,
+        account = CMD.account,
+        password = CMD.password,
     })
 
-    command.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(pk)
+    CMD.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(pk)
         local data = functor.unpack_AckLogin(pk:data())
         -- dump(data, "AckLogin")
         
         -- 测试发送消息
-        skynet.fork(command.test, data.userInfo.userId)
+        skynet.fork(CMD.test, data.userInfo.userId)
     end)
 end
 
-function command.test(userId)
-    while (command.running) do
+function CMD.test(userId)
+    while (CMD.running) do
         local chatMessage = functor.pack_ChatMessage(
         {
             from = userId,
             to = 11,
             content = "hello"
         })
-        command.client:send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(pk)
+        CMD.client:send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(pk)
             local data = functor.unpack_AckChatMessage(pk:data())
             -- dump(data, "AckChatMessage")
         end)
@@ -102,28 +102,28 @@ function command.test(userId)
     end
 end
 
-function command.alive()
-    if command.running then
-        skynet.timeout(command.aliveTime, command.alive)
+function CMD.alive()
+    if CMD.running then
+        skynet.timeout(CMD.aliveTime, CMD.alive)
     end
 
-    local open = command.client:open()
+    local open = CMD.client:open()
     if not open then
         skynet.error("reconnect to server")
-        local ok, err = command.client:connect(command.scheme, command.host)
+        local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
         if err ~= nil then
             skynet.error(ok, err)
         else
-            command.registerService()
+            CMD.registerService()
         end 
     end
 
     -- local on_alive = function()
-    --     while command.running do
-    --         local open = command.client:open()
+    --     while CMD.running do
+    --         local open = CMD.client:open()
     --         if not open then
     --             skynet.error("reconnect to server")
-    --             local ok, err = command.client:connect(command.scheme, command.host)
+    --             local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
     --             if err then
     --                 skynet.error(ok, err)
     --             end
@@ -147,7 +147,7 @@ function command.alive()
     -- )
 end
 
-function command.message(pk)
+function CMD.message(pk)
     local mid = pk:mid()
     local sid = pk:sid()
     local msgmap = msgs_switch[mid][sid]
@@ -160,7 +160,7 @@ function command.message(pk)
     end
 end
 
-function command.error(err)
+function CMD.error(err)
     skynet.error(err)
 end
 
@@ -175,12 +175,12 @@ local function dispatch()
         "lua",
         function(session, address, cmd, ...)
             cmd = cmd:upper()
-            local f = command[cmd]
+            local f = CMD[cmd]
             assert(f)
             if f then
                 skynet.ret(skynet.pack(f(...)))
             else
-                skynet.error(string.format("unknown command %s", tostring(cmd)))
+                skynet.error(string.format("unknown CMD %s", tostring(cmd)))
             end
         end
     )

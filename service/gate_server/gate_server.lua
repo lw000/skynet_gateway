@@ -5,7 +5,7 @@ local service = require("skynet.service")
 require("skynet.manager")
 require("service_config.type")
 
-local command = {
+local CMD = {
     servertype = SERVICE_TYPE.GATE.ID,
     servername = SERVICE_TYPE.GATE.NAME,
     debug = false,
@@ -18,52 +18,52 @@ local command = {
     backend_servers = {},        -- 后端转发服务ID
 }
 
-function command.START(content)
-    command.debug = content.debug
-    command.port = content.port
-    command.centerPort = content.centerPort
-    command.centerIP = content.centerIP,
-    assert(command.port > 0)
+function CMD.START(content)
+    CMD.debug = content.debug
+    CMD.port = content.port
+    CMD.centerPort = content.centerPort
+    CMD.centerIP = content.centerIP,
+    assert(CMD.port > 0)
 
-    local host = string.format("%s:%d", command.centerIP, command.centerPort)
+    local host = string.format("%s:%d", CMD.centerIP, CMD.centerPort)
     for i= 0, 5 do
         local backend_server = skynet.newservice("backend")
-        command.backend_servers[i] = backend_server
+        CMD.backend_servers[i] = backend_server
         skynet.call(backend_server, "lua", "start", "ws", host, {
             debug = content.debug,
             gate_server = skynet.self(),
         })
     end
-    command.listen()
+    CMD.listen()
     return 0
 end
 
-function command.STOP()
+function CMD.STOP()
     backend.stop()
-    socket.close(command.sockt_listen_id)
+    socket.close(CMD.sockt_listen_id)
 end
 
-function command.listen()
-    command.sockt_listen_id = socket.listen("0.0.0.0", command.port)
-    assert(command.sockt_listen_id ~= -1, "listen fail")
+function CMD.listen()
+    CMD.sockt_listen_id = socket.listen("0.0.0.0", CMD.port)
+    assert(CMD.sockt_listen_id ~= -1, "listen fail")
 
-    skynet.error(string.format("listen port:" .. command.port))
+    skynet.error(string.format("listen port:" .. CMD.port))
     
-    socket.start(command.sockt_listen_id, function(id, addr)
+    socket.start(CMD.sockt_listen_id, function(id, addr)
         local agent = skynet.newservice("gate_agent")
-        -- command.agents[agent] = agent
-        -- dump(command.backend_servers, "command.backend_servers")
-        local backend_server_length = #command.backend_servers+1
+        -- CMD.agents[agent] = agent
+        -- dump(CMD.backend_servers, "CMD.backend_servers")
+        local backend_server_length = #CMD.backend_servers+1
         local backendIndex = math.fmod(agent, backend_server_length)
-        local backend_server = command.backend_servers[backendIndex]
+        local backend_server = CMD.backend_servers[backendIndex]
         -- skynet.error(
         --     "agent=", agent,
         --     "backend_server_length=", backend_server_length,
         --     "backendIndex=", backendIndex,
         --     "backend_server=", backend_server
         -- )
-        skynet.send(agent, "lua", "start", id, command.protocol, addr, {
-            debug = command.debug,
+        skynet.send(agent, "lua", "start", id, CMD.protocol, addr, {
+            debug = CMD.debug,
             backend_server = backend_server,
             gate_server = skynet.self(),
         })
@@ -75,12 +75,12 @@ local function dispatch()
         "lua",
         function(session, address, cmd, ...)
             cmd = cmd:upper()
-            local f = command[cmd]
+            local f = CMD[cmd]
             assert(f)
             if f then
                 skynet.ret(skynet.pack(f(...)))
             else
-                skynet.error(string.format(command.servername .. " unknown command %s", tostring(cmd)))
+                skynet.error(string.format(CMD.servername .. " unknown CMD %s", tostring(cmd)))
             end
         end
     )

@@ -7,7 +7,7 @@ require("skynet.manager")
 require("common.export")
 require("service_config.type")
 
-local command = {
+local CMD = {
 	servertype = SERVICE_TYPE.REDIS.ID, 	-- 服务类型
 	servername = SERVICE_TYPE.REDIS.NAME,  	-- 服务名
 	running = false,					-- 服务器状态
@@ -16,26 +16,26 @@ local command = {
 	conf = nil, 						-- redis配置
 }
 
-function command.START(conf)
+function CMD.START(conf)
 	assert(conf ~= nil)
-	command.conf = conf
-	command.redisConn = redis.connect(command.conf)
-	assert(command.redisConn ~= nil)
-    if command.redisConn == nil then
-        return 1, command.servername .. " fail"
+	CMD.conf = conf
+	CMD.redisConn = redis.connect(CMD.conf)
+	assert(CMD.redisConn ~= nil)
+    if CMD.redisConn == nil then
+        return 1, CMD.servername .. " fail"
 	end
 	
 	math.randomseed(os.time())
 	
-	command.running = true
+	CMD.running = true
 
-	mgr.start(command.servername)
+	mgr.start(CMD.servername)
 
 	-- 定时同步数据到dbserver
 	skynet.fork(
 		function(...)
 			local ok = xpcall(
-				command._syncToDbserver,
+				CMD._syncToDbserver,
 				__G__TRACKBACK__
 			)
 			if ok then
@@ -47,34 +47,34 @@ function command.START(conf)
     return 0
 end
 
-function command.STOP()
-	command.running = false
+function CMD.STOP()
+	CMD.running = false
 	
 	mgr.stop()
 
-	command.redisConn:disconnect()
-	command.redisdb = nil
+	CMD.redisConn:disconnect()
+	CMD.redisdb = nil
 	
     return 0
 end
 
 -- REDIS服务·消息处理接口
-function command.MESSAGE(head, content)
+function CMD.MESSAGE(head, content)
 	assert(head ~= nil and type(head) == "table")
     assert(content ~= nil and type(content) == "table")
-	return mgr.dispatch(command.redisConn, head, content)
+	return mgr.dispatch(CMD.redisConn, head, content)
 end
 
 -- 定时同步数据到数据库
-function command._syncToDbserver()
-    while command.running do
+function CMD._syncToDbserver()
+    while CMD.running do
 		skynet.sleep(100)
 			
 		local now = os.date("*t")
         -- dump(now, "系统时间")
 
 		-- 每30秒同步一次服务器数据
-		if math.fmod(now.sec, command.syncInterval) == 0 then
+		if math.fmod(now.sec, CMD.syncInterval) == 0 then
 			
 		end
     end
@@ -85,16 +85,16 @@ local function dispatch()
         "lua",
         function(session, address, cmd, ...)
             cmd = cmd:upper()
-            local f = command[cmd]
+            local f = CMD[cmd]
             assert(f)
             if f then
                 skynet.ret(skynet.pack(f(...)))
             else
-                skynet.error(string.format(command.servername .. " unknown command %s", tostring(cmd)))
+                skynet.error(string.format(CMD.servername .. " unknown CMD %s", tostring(cmd)))
             end
         end
     )
-    skynet.register(command.servername)
+    skynet.register(CMD.servername)
 end
 
 skynet.start(dispatch)

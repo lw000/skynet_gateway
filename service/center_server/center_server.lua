@@ -6,7 +6,7 @@ local skyhelper = require("skycommon.helper")
 require("skynet.manager")
 require("service_config.type")
 
-local command = {
+local CMD = {
     servertype = SERVICE_TYPE.CENTER.ID,
     servername = SERVICE_TYPE.CENTER.NAME,
     debug = false,
@@ -16,39 +16,39 @@ local command = {
     sockt_listen_id = -1,
 }
 
-function command.START(content)
-    command.debug = content.debug
-    command.port = content.port
-    assert(command.port > 0)
+function CMD.START(content)
+    CMD.debug = content.debug
+    CMD.port = content.port
+    assert(CMD.port > 0)
 
-    command.listen()
+    CMD.listen()
     return 0
 end
 
-function command.STOP()
-    socket.close(command.sockt_listen_id)
+function CMD.STOP()
+    socket.close(CMD.sockt_listen_id)
 end
 
-function command.listen()
-    command.sockt_listen_id = socket.listen("0.0.0.0", command.port)
-    assert(command.sockt_listen_id ~= -1, "listen fail")
+function CMD.listen()
+    CMD.sockt_listen_id = socket.listen("0.0.0.0", CMD.port)
+    assert(CMD.sockt_listen_id ~= -1, "listen fail")
 
-    skynet.error(string.format("listen port:" .. command.port))
+    skynet.error(string.format("listen port:" .. CMD.port))
     
-    socket.start(command.sockt_listen_id, function(id, addr)
+    socket.start(CMD.sockt_listen_id, function(id, addr)
         local agent = skynet.newservice("center_agent")
-        skynet.send(agent, "lua", "start", id, command.protocol, addr, {
-            debug = command.debug,
-            servername = command.servername,
+        skynet.send(agent, "lua", "start", id, CMD.protocol, addr, {
+            debug = CMD.debug,
+            servername = CMD.servername,
             center_server = skynet.self(),
         })
     end)
 end
 
-function command.SERVICE_MESSAGE(head, content)
+function CMD.SERVICE_MESSAGE(head, content)
     assert(head ~= nil and type(head)== "table")
-    if command.debug then
-        dump(head, command.servername .. ".head")
+    if CMD.debug then
+        dump(head, CMD.servername .. ".head")
     end
     skyhelper.send(head.serviceId, "service_message", head, content)
 end
@@ -58,16 +58,16 @@ local function dispatch()
         "lua",
         function(session, address, cmd, ...)
             cmd = cmd:upper()
-            local f = command[cmd]
+            local f = CMD[cmd]
             assert(f)
             if f then
                 skynet.ret(skynet.pack(f(...)))
             else
-                skynet.error(string.format(command.servername .. " unknown command %s", tostring(cmd)))
+                skynet.error(string.format(CMD.servername .. " unknown CMD %s", tostring(cmd)))
             end
         end
     )
-    skynet.register(command.servername)
+    skynet.register(CMD.servername)
 end
 
 skynet.start(dispatch)
