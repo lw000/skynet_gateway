@@ -1,5 +1,5 @@
 local skynet = require("skynet")
-local logic = require("db_server.db_logic_server_func")
+local logic = require("db_server.service.db_logic_func")
 require("common.export")
 require("service_config.type")
 require("service_config.cmd")
@@ -42,6 +42,7 @@ function manager.dispatch(dbconn, head, content)
         skynet.error(errmsg)
         return nil, errmsg
     end
+    
     return method.func(dbconn, head, content)
 end
 

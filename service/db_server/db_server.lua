@@ -36,7 +36,7 @@ function CMD.start(conf)
     math.randomseed(os.time())
 
     for i=0, 9 do
-        local db_logic_server = skynet.newservice("db_logic_server")
+        local db_logic_server = skynet.newservice("service/db_logic_server")
         db_logic_servers[i] = db_logic_server
         skynet.call(db_logic_server, "lua", "start", {
             conf = conf,

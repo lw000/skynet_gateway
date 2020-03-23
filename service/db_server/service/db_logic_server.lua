@@ -3,7 +3,7 @@ local skynet = require("skynet")
 local service = require("skynet.service")
 local skyhelper = require("skycommon.helper")
 local database = require("db_server.database.database")
-local mgr = require("db_server.db_manager")
+local mgr = require("db_server.service.db_logic_manager")
 require("skynet.manager")
 require("common.export")
 
