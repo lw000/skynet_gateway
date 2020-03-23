@@ -12,7 +12,7 @@ require("proto_map.proto_func")
 local gate_server_id = -1
 
 local CMD = {
-    name = "backend",
+    name = ".center_proxy",
     scheme = "ws",
     debug = false,
     running = false,
@@ -161,7 +161,7 @@ local function dispatch()
             end
         end
     )
-    skynet.register(".backend")
+    skynet.register(CMD.name)
 end
 
 skynet.start(dispatch)
