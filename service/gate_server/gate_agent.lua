@@ -86,6 +86,7 @@ function handle.message(sock_id, msg)
 
     -- 心跳消息处理
     if mid == 0 and sid == 0 then
+        --处理客户端心跳，超时的关闭
         return
     end
 
