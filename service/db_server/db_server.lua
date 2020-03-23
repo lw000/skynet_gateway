@@ -58,10 +58,11 @@ function CMD.server_message(head, content)
     assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
 
-    local rand_db_logic_server = math.random(0, #db_logic_servers)
-    skynet.error("rand_db_logic_server=", rand_db_logic_server)
+    local index = math.random(0, #db_logic_servers)
 
-    return skyhelper.call(db_logic_servers[rand_db_logic_server], "server_message", head, content)
+    -- skynet.error("rand db_logic_server index:", index)
+
+    return skyhelper.call(db_logic_servers[index], "server_message", head, content)
 end
 
 local function dispatch()

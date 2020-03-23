@@ -9,7 +9,7 @@ require("proto_map.proto_map")
 
 local gate_server_id = -1
 
-local backend_server_id = -1
+local center_proxy_server_id = -1
 
 local handle = {
     name = "gate_server.agent",
@@ -21,7 +21,7 @@ function handle.start(sock_id, protocol, addr, content)
     -- dump(content, "content")
     handle.debug = content.debug
     gate_server_id = content.gate_server_id
-    backend_server_id = content.backend_server_id
+    center_proxy_server_id = content.center_proxy_server_id
 
     handle.name = string.format("%s.%d", handle.name, skynet.self())
 
@@ -109,7 +109,7 @@ function handle.message(sock_id, msg)
             -- dump(head, handle.name .. ".head")
             -- dump(content, handle.name .. ".content")
         end
-        skyhelper.send(backend_server_id, "service_message", head, content)
+        skyhelper.send(center_proxy_server_id, "service_message", head, content)
     end
     skynet.fork(forwardMessage, head, content)
 end

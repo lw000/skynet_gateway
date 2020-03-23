@@ -5,7 +5,7 @@ local service = require("skynet.service")
 require("skynet.manager")
 require("service_config.type")
 
-local backend_servers = {}  -- 后端代理服务ID
+local center_proxy_servers = {}  -- 后端代理服务ID
 
 local CMD = {
     servertype = SERVICE_TYPE.GATE.ID,
@@ -28,14 +28,14 @@ function CMD.start(content)
 
     local host = string.format("%s:%d", CMD.centerIP, CMD.centerPort)
     for i=0, 9 do
-        local backend_server = skynet.newservice("backend/backend")
-        backend_servers[i] = backend_server
-        skynet.call(backend_server, "lua", "start", "ws", host, {
+        local center_proxy = skynet.newservice("proxy/center_proxy")
+        center_proxy_servers[i] = center_proxy
+        skynet.call(center_proxy, "lua", "start", "ws", host, {
             debug = content.debug,
             gate_server_id = skynet.self(),
         })
     end
-    dump(backend_servers, "backend_servers")
+    dump(center_proxy_servers, "center_proxy_servers")
 
     CMD.listen()
     
@@ -56,19 +56,17 @@ function CMD.listen()
     socket.start(CMD.sockt_listen_id, function(id, addr)
         local agent = skynet.newservice("gate_agent")
         -- CMD.agents[agent] = agent
-        local backend_server_length = #backend_servers+1
-        -- local backend_index = math.fmod(agent, backend_server_length)
-        local backend_index = agent % backend_server_length
-        local backend_server_id = backend_servers[backend_index]
+        local center_proxy_server_length = #center_proxy_servers+1
+        local index = agent % center_proxy_server_length
+        local center_proxy_server_id = center_proxy_servers[index]
         skynet.error(
             "agent=", agent,
-            -- "backend_servers_length=", backend_server_length,
-            "backend_index=", backend_index,
-            "backend_server_id=", backend_server_id
+            "index=", index,
+            "center_proxy_server_id=", center_proxy_server_id
         )
         skynet.send(agent, "lua", "start", id, CMD.protocol, addr, {
             debug = CMD.debug,
-            backend_server_id = backend_server_id,
+            center_proxy_server_id = center_proxy_server_id,
             gate_server = skynet.self(),
         })
     end)
