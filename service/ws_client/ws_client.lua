@@ -1,7 +1,10 @@
 package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
-local ws = require("network.ws")
+local ws = require("network.wsext")
+local timer = require("network.timer")
+local hub = require("network.hub")
+local packet = require("network.packet")
 require("skynet.manager")
 require("common.export")
 require("service_config.type")
@@ -12,23 +15,8 @@ local CMD = {
     scheme = "ws",
     host = "127.0.0.1",
     running = false,
-    aliveTime = 100*5,
+    aliveTime = 2,
     client = ws:new()
-}
-
-local msgs_switch = {
-    [0x0001] = {
-        name = "MDM_CORE",
-        [0x0001] = {
-            name = "SUB_CORE_REGISTER",
-            fn = function(pk)
-                local data = functor.decode_AckRegistService(pk:data())
-                dump(data, "AckRegistService")
-                if data.result == 0 then
-                end
-            end
-        }
-    }
 }
 
 function CMD.start(scheme, host, content)
@@ -36,21 +24,46 @@ function CMD.start(scheme, host, content)
     CMD.password = content.password
     CMD.scheme = scheme
     CMD.host = host
-    CMD.client:handleMessage(CMD.message)
-    CMD.client:handleError(CMD.error)
+    CMD.client:handleMessage(CMD.on_message)
+    CMD.client:handleError(CMD.on_error)
     local ok, err = CMD.client:connect(scheme, host)
     if err then
         return 1, "connect fail"
     end
+
     CMD.running = true
 
+    -- 心跳处理
+    timer.start(30, function()
+        if CMD.client:open() then
+            CMD.send(0x0000, 0x0000, 0, nil)
+        end
+    end)
+
     -- 网络断线检查
-    -- CMD.alive()
-    skynet.timeout(CMD.aliveTime, CMD.alive)
+    timer.start(CMD.aliveTime, function()
+        local open = CMD.client:open()
+        if not open then
+            skynet.error("reconnect to server")
+            local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
+            if err ~= nil then
+                skynet.error(ok, err)
+            end
+            open = CMD.client:open()
+            if open then
+                CMD.regist()
+            end
+        end
+    end)
 
     CMD.regist()
 
     return 0
+end
+
+function CMD.stop()
+    CMD.running = false
+    timer.stop()
 end
 
 -- 注册账号
@@ -61,9 +74,10 @@ function CMD.regist()
         password = CMD.password,
     })
 
-    CMD.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(pk)
-        local data = functor.unpack_AckRegist(pk:data())
-        -- dump(data, "AckRegist")
+    CMD.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, 0, reqLogin, function(msg)
+        local data = functor.unpack_AckRegist(msg)
+        dump(data, "AckRegist")
+
         CMD.logon()
     end)
 end
@@ -76,9 +90,9 @@ function CMD.logon()
         password = CMD.password,
     })
 
-    CMD.client:send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(pk)
-        local data = functor.unpack_AckLogin(pk:data())
-        -- dump(data, "AckLogin")
+    CMD.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, 0, reqLogin, function(msg)
+        local data = functor.unpack_AckLogin(msg)
+        dump(data, "AckLogin")
         
         -- 测试发送消息
         skynet.fork(CMD.test, data.userInfo.userId)
@@ -87,50 +101,48 @@ end
 
 function CMD.test(userId)
     while (CMD.running) do
-        local chatMessage = functor.pack_ChatMessage(
-        {
-            from = userId,
-            to = 11,
-            content = "hello"
-        })
-        CMD.client:send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(pk)
-            local data = functor.unpack_AckChatMessage(pk:data())
-            -- dump(data, "AckChatMessage")
-        end)
+        if CMD.client:open() then
+            local chatMessage = functor.pack_ChatMessage(
+            {
+                from = userId,
+                to = 11,
+                content = "hello"
+            })
+            CMD.send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, 0, chatMessage, function(msg)
+                local data = functor.unpack_AckChatMessage(msg)
+                dump(data, "AckChatMessage")
+            end)
+        end
 
         skynet.sleep(100)
     end
 end
 
-function CMD.alive()
-    if CMD.running then
-        skynet.timeout(CMD.aliveTime, CMD.alive)
+function CMD.send(mid, sid, clientId, content, fn)
+    if not CMD.client:open() then
+        skynet.error("network is disconnect")
+        return
     end
-
-    local open = CMD.client:open()
-    if not open then
-        skynet.error("reconnect to server")
-        local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
-        if err ~= nil then
-            skynet.error(ok, err)
-        end 
+ 
+    local pk = packet:new()
+    pk:pack(mid, sid, clientId, content)
+    if pk:data() == nil then
+        skynet.error("create packet error")
+        return
     end
+    hub.register(mid, sid, fn)
+    CMD.client:send(pk:data())
 end
 
-function CMD.message(pk)
+function CMD.on_message(msg)
+    local pk = packet:new()
+    pk:unpack(msg)
     local mid = pk:mid()
     local sid = pk:sid()
-    local msgmap = msgs_switch[mid][sid]
-    if msgmap then
-        if msgmap.fn ~= nil then
-            skynet.fork(msgmap.fn, pk)
-        end
-    else
-        skynet.error("<: pk", "mid=" .. mid .. ", sid=" .. sid .. "命令未实现")
-    end
+    hub.dispatchMessage(mid, sid, pk:data())
 end
 
-function CMD.error(err)
+function CMD.on_error(err)
     skynet.error(err)
 end
 

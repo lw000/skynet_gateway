@@ -37,7 +37,6 @@ local function onStart()
         skynet.error(ret, err)
         return
     end
-
     skynet.exit()
 end
 

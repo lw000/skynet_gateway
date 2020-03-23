@@ -1,7 +1,10 @@
 package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
-local ws = require("network.ws")
+local ws = require("network.wsext")
+local timer = require("network.timer")
+local hub = require("network.hub")
+local packet = require("network.packet")
 local skyhelper = require("skycommon.helper")
 require("skynet.manager")
 require("common.export")
@@ -12,12 +15,12 @@ require("proto_map.proto_func")
 local gate_server_id = -1
 
 local CMD = {
-    name = ".center_proxy",
+    servername = ".center_proxy",
     scheme = "ws",
     debug = false,
     running = false,
     serverId = 0,
-    aliveTime = 100*5,
+    aliveTime = 2,
     client = ws:new()
 }
 
@@ -27,8 +30,8 @@ function CMD.start(scheme, host, content)
     CMD.debug = content.debug
     gate_server_id = content.gate_server_id
 
-    CMD.client:handleMessage(CMD.message)
-    CMD.client:handleError(CMD.error)
+    CMD.client:handleMessage(CMD.on_message)
+    CMD.client:handleError(CMD.on_error)
     local ok, err = CMD.client:connect(scheme, host)
     if err then
         return 1, err
@@ -36,14 +39,35 @@ function CMD.start(scheme, host, content)
 
     CMD.running = true
 
-    CMD.name = string.format("%s.%d", CMD.name, skynet.self())
+    -- 网络断线检查
+    skynet.timeout(CMD.aliveTime, CMD.alive)
+    
+    -- 心跳处理
+    timer.start(30, function()
+        if CMD.client:open() then
+            CMD.send(0x0000, 0x0000, 0, nil)
+        end
+    end)
+
+    -- 网络断线检查
+    timer.start(CMD.aliveTime, function()
+        local open = CMD.client:open()
+        if not open then
+            skynet.error("reconnect to server")
+            local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
+            if err ~= nil then
+                skynet.error(ok, err)  
+            end
+            open = CMD.client:open()
+            if open then
+                CMD.registerService()
+            end
+        end
+    end)
 
     -- 注册服务
     CMD.registerService()
 
-    -- 网络断线检查
-    skynet.timeout(CMD.aliveTime, CMD.alive)
-    
     return 0
 end
 
@@ -52,10 +76,13 @@ function CMD.stop()
 end
 
 function CMD.service_message(head, content)
-    -- dump(head, CMD.name .. ".head")
-    -- dump(content, CMD.name .. ".content")
+    if CMD.debug then
+        dump(head, CMD.servername .. ".head")
+        dump(content, CMD.servername .. ".content")
+    end
+
     skynet.fork(function (head, content)
-        CMD.client:sendWithClientId(head.mid, head.sid, head.clientId, content.data)
+        CMD.sendWithClientId(head.mid, head.sid, head.clientId, content)
     end, head, content)
 end
 
@@ -66,7 +93,7 @@ function CMD.registerService()
             svrType = SERVICE_TYPE.GATE.ID
         }
     )
-    CMD.client:send(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, content, function(pk)
+    CMD.send(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, 0, content, function(pk)
         local data = functor.unpack_AckRegService(pk:data())
         dump(data, "AckRegistService")
         if data.result == 0 then
@@ -75,70 +102,94 @@ function CMD.registerService()
     end)
 end
 
--- 网络状态是否存活
-function CMD.alive()
-    if CMD.running then
-        skynet.timeout(CMD.aliveTime, CMD.alive)
-    end
-
-    local open = CMD.client:open()
-    if not open then
-        skynet.error("reconnect to server")
-        local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
-        if err ~= nil then
-            skynet.error(ok, err)
-        else
-            CMD.registerService()
-        end 
-    end
+function CMD.sendWithClientId(mid, sid, clientId, content)
+    local pk = packet:new()
+    pk:pack(mid, sid, clientId, content.data)
+    CMD.client:send(pk:data())
 end
 
-function CMD.message(pk)
-    local mid = pk:mid()
-    local sid = pk:sid()
-    local ver = pk:ver()
-    local checkCode = pk:checkCode()
+function CMD.send(mid, sid, clientId, content, fn)
+    if not CMD.client:open() then
+        skynet.error("network is disconnect")
+        return
+    end
+ 
+    local pk = packet:new()
+    pk:pack(mid, sid, clientId, content)
+    if pk:data() == nil then
+        skynet.error("create packet error")
+        return
+    end
+    hub.register(mid, sid, fn)
+    CMD.client:send(pk:data())
+end
+
+function CMD.on_message(msg)
+    local pk = packet:new()
+    pk:unpack(msg)
+
     local clientId = pk:clientId()
 
-    -- 检查版本
-    if ver >= 0 then
-        -- body
-    end
-
-    -- 包校验码检查
-    if checkCode ~= 123456 then
-        -- body
-    end
-
-    if CMD.debug then
-        skynet.error(CMD.name .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
-    end
-
-    -- 包头
-    local head = {
-        mid = mid,
-        sid = sid,
-        ver = ver,
-        checkCode = checkCode,
-        clientId = clientId,
-    }
-
-    -- 内容
     local content = {
-        data = pk:data()
+        data = msg
     }
 
-    local forwardMessage = function(clientId, head, content)
+    local forwardMessage = function(clientId, content)
         if CMD.debug then
-            -- dump(head, CMD.name .. ".head")
-            -- dump(content, CMD.name .. ".content")
+            -- dump(head, CMD.servername .. ".head")
+            -- dump(content, CMD.servername .. ".content")
         end  
-        skyhelper.send(clientId, "service_message", head, content)
+        skyhelper.send(clientId, "service_message", nil, content)
     end
-    skynet.fork(forwardMessage, clientId, head, content)
+    skynet.fork(forwardMessage, clientId, content)
 end
 
-function CMD.error(err)
+-- function CMD.on_message(pk)
+--     local mid = pk:mid()
+--     local sid = pk:sid()
+--     local ver = pk:ver()
+--     local checkCode = pk:checkCode()
+--     local clientId = pk:clientId()
+
+--     -- 检查版本
+--     if ver >= 0 then
+--         -- body
+--     end
+
+--     -- 包校验码检查
+--     if checkCode ~= 123456 then
+--         -- body
+--     end
+
+--     if CMD.debug then
+--         skynet.error(CMD.servername .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
+--     end
+
+--     -- 包头
+--     local head = {
+--         mid = mid,
+--         sid = sid,
+--         ver = ver,
+--         checkCode = checkCode,
+--         clientId = clientId,
+--     }
+
+--     -- 内容
+--     local content = {
+--         data = pk:data()
+--     }
+
+--     local forwardMessage = function(clientId, head, content)
+--         if CMD.debug then
+--             -- dump(head, CMD.servername .. ".head")
+--             -- dump(content, CMD.servername .. ".content")
+--         end  
+--         skyhelper.send(clientId, "service_message", head, content)
+--     end
+--     skynet.fork(forwardMessage, clientId, head, content)
+-- end
+
+function CMD.on_error(err)
     skynet.error(err)
 end
 
@@ -161,7 +212,7 @@ local function dispatch()
             end
         end
     )
-    skynet.register(CMD.name)
+    skynet.register(CMD.servername)
 end
 
 skynet.start(dispatch)

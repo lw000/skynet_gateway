@@ -43,11 +43,8 @@ function handle.service_message(head, content)
         -- dump(head, handle.servername .. ".head")
         -- dump(content, handle.servername .. ".content")
     end
-    -- skynet.fork(function (head, content)
-    --     handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content.data)
-    -- end, head, content)
     skynet.fork(function (head, content)
-        handle.send(handle.sock_id, content)
+        handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content.data)
     end, head, content)
 end
 
@@ -138,14 +135,10 @@ function handle.error(sock_id)
     skynet.exit()
 end
 
--- function handle.send(sock_id, mid, sid, clientid, content)
---     local pk = packet:new()
---     pk:pack(mid, sid, clientid, content)
---     websocket.write(sock_id, pk:data(), "binary", 0x02)
--- end
-
-function handle.send(sock_id, content)
-    websocket.write(sock_id, content.data, "binary", 0x02)
+function handle.send(sock_id, mid, sid, clientid, content)
+    local pk = packet:new()
+    pk:pack(mid, sid, clientid, content)
+    websocket.write(sock_id, pk:data(), "binary", 0x02)
 end
 
 -- skynet.init(

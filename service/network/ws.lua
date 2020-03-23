@@ -1,5 +1,4 @@
 local skynet = require("skynet")
-local service = require("skynet.service")
 local packet = require("network.packet")
 
 local WSClient = class("WSClient")
