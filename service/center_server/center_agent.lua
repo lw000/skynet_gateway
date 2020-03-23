@@ -87,7 +87,7 @@ function handle.message(sock_id, msg)
 
     -- 心跳消息处理
     if mid == 0 and sid == 0 then
-        skynet.error("心跳", "mid=" .. mid, "sid=" .. sid, os.date("%Y-%m-%d %H:%M:%S", os.time()))
+        -- skynet.error("心跳", "mid=" .. ssmid, "sid=" .. sid, os.date("%Y-%m-%d %H:%M:%S", os.time()))
         return
     end
 
