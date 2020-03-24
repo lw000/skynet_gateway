@@ -59,7 +59,7 @@ function CMD.on_server_message(head, content)
     assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
 
-    local index = head.serviceId % #db_logic_servers
+    local index = head.serviceId % (#db_logic_servers+1)
 
     -- skynet.error("rand db_logic_server index:", index)
 

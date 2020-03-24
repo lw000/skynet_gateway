@@ -44,7 +44,7 @@ function CMD.on_server_message(head, content)
 
     -- dump(head, "head")
 
-    local index = head.serviceId % #chat_logic_servers
+    local index = head.serviceId % (#chat_logic_servers+1)
 
     -- skynet.error("rand chat_logic_server index:", index)
 
