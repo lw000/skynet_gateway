@@ -2,32 +2,23 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
 local skyhelper = require("skycommon.helper")
-local database = require("db_server.database.database")
-local mgr = require("db_server.service.db_logic_manager")
+local mgr = require("chat_server.service.chat_manager")
 require("skynet.manager")
-require("skynet.manager")
-require("common.export")
-
-local db_server_id = -1
 
 local CMD = {
-    servername = ".db_logic_server",
-    dbconn = nil,                   -- db连接
-    conf = nil,                     -- 数据库配置
+
+}
+
+local chat_server_id = -1
+
+local CMD = {
+    servername = ".chat_logic_server",
     debug = false,
 }
 
 function CMD.start(content)
-    assert(content ~= nil)
-    CMD.debug = content.conf.debug
-    CMD.conf = content.conf
-    db_server_id = content.db_server_id
-
-    CMD.dbconn = database.open(CMD.conf)
-    assert(CMD.dbconn ~= nil)
-    if CMD.dbconn == nil then
-        return 1, CMD.servername .. " db connect fail"
-    end
+    CMD.debug = content.debug
+    chat_server_id = content.chat_server_id
 
     mgr.start(CMD.servername, CMD.debug)
 
@@ -38,8 +29,6 @@ end
 function CMD.stop()
     mgr.stop()
 
-    database.close(CMD.dbconn)
-    CMD.dbconn = nil
     return 0
 end
 
@@ -47,7 +36,7 @@ end
 function CMD.server_message(head, content)
     assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
-    return mgr.dispatch(CMD.dbconn, head, content)
+    return mgr.dispatch(head, content)
 end
 
 local function dispatch()

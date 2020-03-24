@@ -8,7 +8,7 @@ require("service_config.type")
 require("service_config.cmd")
 
 
-local db_logic_servers = {}  -- 后端代理服务ID
+local db_logic_servers = {}  -- 服务ID
 
 --[[
     db数据库服务
@@ -27,10 +27,11 @@ local CMD = {
 ]]
 function CMD.start(conf)
     assert(conf ~= nil)
-
-    dump(conf, "conf")
-
+    
     CMD.debug = conf.debug
+    if CMD.debug then
+        dump(conf, "conf")
+    end
 
     -- 设置随机种子
     math.randomseed(os.time())
@@ -43,7 +44,7 @@ function CMD.start(conf)
             db_server_id = skynet.self(),
         })
     end
-    dump(db_logic_servers, "db_logic_servers")
+    -- dump(db_logic_servers, "db_logic_servers")
 
     return 0
 end
@@ -58,7 +59,7 @@ function CMD.server_message(head, content)
     assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
 
-    local index = math.random(0, #db_logic_servers)
+    local index = head.serviceId % #db_logic_servers
 
     -- skynet.error("rand db_logic_server index:", index)
 

@@ -23,8 +23,6 @@ function handle.start(sock_id, protocol, addr, content)
     gate_server_id = content.gate_server_id
     center_proxy_server_id = content.center_proxy_server_id
 
-    handle.name = string.format("%s.%d", handle.name, skynet.self())
-
     local ok, err = websocket.accept(sock_id, handle, protocol, addr)
     if err then
         skynet.error(err)
@@ -46,8 +44,9 @@ function handle.service_message(head, content)
     -- skynet.fork(function (head, content)
     --     handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content.data)
     -- end, head, content)
+
     skynet.fork(function (head, content)
-        handle.send(handle.sock_id, content)
+        handle.send(handle.sock_id, content.data)
     end, head, content)
 end
 
@@ -94,7 +93,7 @@ function handle.message(sock_id, msg)
     -- 心跳消息处理
     if mid == 0 and sid == 0 then
         --处理客户端心跳，超时的关闭
-        skynet.error("心跳", os.date("%Y-%m-%d %H:%M:%S", os.time()))
+        -- skynet.error("心跳", os.date("%Y-%m-%d %H:%M:%S", os.time()))
         return
     end
 
@@ -112,8 +111,8 @@ function handle.message(sock_id, msg)
 
     local forwardMessage = function(head, content)
         if handle.debug then
-            -- dump(head, handle.servername .. ".head")
-            -- dump(content, handle.servername .. ".content")
+            dump(head, handle.servername .. ".head")
+            dump(content, handle.servername .. ".content")
         end
         skyhelper.send(center_proxy_server_id, "service_message", head, content)
     end
@@ -144,8 +143,8 @@ end
 --     websocket.write(sock_id, pk:data(), "binary", 0x02)
 -- end
 
-function handle.send(sock_id, content)
-    websocket.write(sock_id, content.data, "binary", 0x02)
+function handle.send(sock_id, data)
+    websocket.write(sock_id, data, "binary", 0x02)
 end
 
 -- skynet.init(

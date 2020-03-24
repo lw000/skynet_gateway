@@ -74,9 +74,9 @@ function CMD.regist()
         password = CMD.password,
     })
 
-    CMD.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, 0, reqLogin, function(msg)
+    CMD.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(msg)
         local data = functor.unpack_AckRegist(msg)
-        dump(data, "AckRegist")
+        -- dump(data, "AckRegist")
 
         CMD.logon()
     end)
@@ -90,12 +90,13 @@ function CMD.logon()
         password = CMD.password,
     })
 
-    CMD.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, 0, reqLogin, function(msg)
+    CMD.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(msg)
         local data = functor.unpack_AckLogin(msg)
-        dump(data, "AckLogin")
+        -- dump(data, "AckLogin")
         
         -- 测试发送消息
-        skynet.fork(CMD.test, data.userInfo.userId)
+        -- skynet.fork(CMD.test, data.userInfo.userId)
+
     end)
 end
 
@@ -108,9 +109,9 @@ function CMD.test(userId)
                 to = 11,
                 content = "hello"
             })
-            CMD.send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, 0, chatMessage, function(msg)
+            CMD.send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(msg)
                 local data = functor.unpack_AckChatMessage(msg)
-                dump(data, "AckChatMessage")
+                -- dump(data, "AckChatMessage")
             end)
         end
 
@@ -118,20 +119,31 @@ function CMD.test(userId)
     end
 end
 
-function CMD.send(mid, sid, clientId, content, fn)
+function CMD.sendBuff(data)
+    CMD.client:send(data)
+end
+
+function CMD.sendWithClientId(mid, sid, clientId, data, fn)
     if not CMD.client:open() then
         skynet.error("network is disconnect")
         return
     end
- 
+
     local pk = packet:new()
-    pk:pack(mid, sid, clientId, content)
+    pk:pack(mid, sid, clientId, data)
     if pk:data() == nil then
         skynet.error("create packet error")
         return
     end
-    hub.register(mid, sid, fn)
-    CMD.client:send(pk:data())
+    if fn then
+        hub.register(mid, sid, fn)
+    end
+
+    CMD.sendBuff(pk:data())
+end
+
+function CMD.send(mid, sid, data, fn)
+    return CMD.sendWithClientId(mid, sid, 0, data, fn)
 end
 
 function CMD.on_message(msg)

@@ -20,7 +20,7 @@ local CMD = {
     debug = false,
     running = false,
     serverId = 0,
-    aliveTime = 2,
+    keepalive = 2,
     client = ws:new()
 }
 
@@ -39,18 +39,15 @@ function CMD.start(scheme, host, content)
 
     CMD.running = true
 
-    -- 网络断线检查
-    skynet.timeout(CMD.aliveTime, CMD.alive)
-    
     -- 心跳处理
     timer.start(30, function()
         if CMD.client:open() then
-            CMD.send(0x0000, 0x0000, 0, nil)
+            CMD.send(0x0000, 0x0000, 0, nil, nil)
         end
     end)
 
     -- 网络断线检查
-    timer.start(CMD.aliveTime, function()
+    timer.start(CMD.keepalive, function()
         local open = CMD.client:open()
         if not open then
             skynet.error("reconnect to server")
@@ -82,7 +79,7 @@ function CMD.service_message(head, content)
     end
 
     skynet.fork(function (head, content)
-        CMD.sendWithClientId(head.mid, head.sid, head.clientId, content)
+        CMD.sendWithClientId(head.mid, head.sid, head.clientId, content.data)
     end, head, content)
 end
 
@@ -93,8 +90,8 @@ function CMD.registerService()
             svrType = SERVICE_TYPE.GATE.ID
         }
     )
-    CMD.send(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, 0, content, function(pk)
-        local data = functor.unpack_AckRegService(pk:data())
+    CMD.send(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, content, function(content)
+        local data = functor.unpack_AckRegService(content)
         dump(data, "AckRegistService")
         if data.result == 0 then
             -- skynet.error("code=" .. data.result, "serverId=" .. data.serverId, "errmsg=" .. data.errmsg)
@@ -102,34 +99,45 @@ function CMD.registerService()
     end)
 end
 
-function CMD.sendWithClientId(mid, sid, clientId, content)
-    local pk = packet:new()
-    pk:pack(mid, sid, clientId, content.data)
-    CMD.client:send(pk:data())
+function CMD.sendBuff(data)
+    CMD.client:send(data)
 end
 
-function CMD.send(mid, sid, clientId, content, fn)
+function CMD.sendWithClientId(mid, sid, clientId, data, fn)
     if not CMD.client:open() then
         skynet.error("network is disconnect")
         return
     end
- 
+
     local pk = packet:new()
-    pk:pack(mid, sid, clientId, content)
+    pk:pack(mid, sid, clientId, data)
     if pk:data() == nil then
         skynet.error("create packet error")
         return
     end
-    hub.register(mid, sid, fn)
-    CMD.client:send(pk:data())
+    if fn then
+        hub.register(mid, sid, fn)
+    end
+
+    CMD.sendBuff(pk:data())
+end
+
+function CMD.send(mid, sid, data, fn)
+    return CMD.sendWithClientId(mid, sid, 0, data, fn)
 end
 
 function CMD.on_message(msg)
     local pk = packet:new()
     pk:unpack(msg)
 
-    local clientId = pk:clientId()
+    local mid = pk:mid()
+    local sid = pk:sid()
 
+    if hub.dispatchMessage(mid, sid, pk:data()) then
+        return
+    end
+
+    local clientId = pk:clientId()
     local content = {
         data = msg
     }

@@ -1,24 +1,40 @@
 local skynet = require("skynet")
+require("common.export")
+
+-- local events = {
+--     [1]={
+--         [1] = {fn=function() end}
+--     },
+--     [2]={
+--         [1] = {fn=function() end}
+--     },
+--     [3]={
+--         [1] = {fn=function() end}
+--     },
+-- }
+-- dump(events, "events")
 
 local Hub = {
     events = {}
 }
 
 function Hub.register(mid, sid, fn)
-    if fn then
-        local mids = Hub.events[mid]
-        if mids == nil then
-            mids = {}
-            Hub.events[mid] = mids
-        end
-
-        local sids = mids[sid]
-        if sids == nil then
-            sids = {}
-        end
-        sids.fn = fn
-        mids[sid] = sids
+    if fn == nil then
+        return
     end
+
+    local m = Hub.events[mid]
+    if m == nil then
+        m = {}
+        Hub.events[mid] = m
+    end
+
+    local s = m[sid]
+    if s == nil then
+        s = {}
+    end
+    s.fn = fn
+    m[sid] = s
 end
 
 function Hub.unregister(mid, sid)
@@ -26,15 +42,17 @@ function Hub.unregister(mid, sid)
 end
 
 function Hub.dispatchMessage(mid, sid, data)
-    local mmap = Hub.events[mid]
-    assert(mmap ~= nil)
+    local m = Hub.events[mid]
+    if m == nil then return false end
 
-    local obj = mmap[sid]
-    assert(obj ~= nil)
+    local s = m[sid]
+    if s == nil then return false end
 
-    assert(obj.fn ~= nil)
-    
-    skynet.fork(obj.fn, data)
+    assert(s.fn ~= nil)
+
+    skynet.fork(s.fn, data)
+
+    return true
 end
 
 return Hub

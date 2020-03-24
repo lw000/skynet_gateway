@@ -1,6 +1,6 @@
 local skynet = require("skynet")
 local skyhelper = require("skycommon.helper")
-local logic = require("chat_server.logic")
+local logic = require("chat_server.service.chat_logic_func")
 require("common.export")
 require("service_config.type")
 require("proto_map.proto_map")

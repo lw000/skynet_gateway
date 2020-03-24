@@ -35,7 +35,7 @@ function CMD.start(content)
             gate_server_id = skynet.self(),
         })
     end
-    dump(center_proxy_servers, "center_proxy_servers")
+    -- dump(center_proxy_servers, "center_proxy_servers")
 
     CMD.listen()
     
@@ -59,11 +59,11 @@ function CMD.listen()
         local center_proxy_server_length = #center_proxy_servers+1
         local index = agent % center_proxy_server_length
         local center_proxy_server_id = center_proxy_servers[index]
-        skynet.error(
-            "agent=", agent,
-            "index=", index,
-            "center_proxy_server_id=", center_proxy_server_id
-        )
+        -- skynet.error(
+        --     "agent=", agent,
+        --     "index=", index,
+        --     "center_proxy_server_id=", center_proxy_server_id
+        -- )
         skynet.send(agent, "lua", "start", id, CMD.protocol, addr, {
             debug = CMD.debug,
             center_proxy_server_id = center_proxy_server_id,
