@@ -2,50 +2,45 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local websocket = require("http.websocket")
 local packet = require("network.packet")
+local mgr = require("center_server.service.center_manager")
 local skyhelper = require("skycommon.helper")
 require("skynet.manager")
 require("service_config.type")
 require("proto_map.proto_map")
 
-local gate_server_id = -1
-
-local center_proxy_server_id = -1
+local center_server_id = -1
 
 local handle = {
-    servername = ".gate_agent",
+    servername = ".center_agent",
     debug = false,
     sock_id = -1,
 }
 
 function handle.start(sock_id, protocol, addr, content)
-    -- dump(content, "content")
     handle.debug = content.debug
-    gate_server_id = content.gate_server_id
-    center_proxy_server_id = content.center_proxy_server_id
-
-    handle.name = string.format("%s.%d", handle.name, skynet.self())
+    center_server_id = content.center_server_id
 
     local ok, err = websocket.accept(sock_id, handle, protocol, addr)
     if err then
         skynet.error(err)
         return 1, "websocket.accept fail"
     end
-    
+
+    mgr.start(handle.servername, handle.debug)
+
     return 0
 end
 
 function handle.stop()
-
+    mgr.stop()
 end
 
 function handle.service_message(head, content)
     if handle.debug then
-        -- dump(head, handle.servername .. ".head")
-        -- dump(content, handle.servername .. ".content")
+        dump(head, handle.servername .. ".head")
+        dump(content, handle.servername .. ".content")
     end
-    skynet.fork(function (head, content)
-        handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content.data)
-    end, head, content)
+    handle.send(handle.sock_id, head, content)
 end
 
 function handle.connect(sock_id)
@@ -90,8 +85,7 @@ function handle.message(sock_id, msg)
 
     -- 心跳消息处理
     if mid == 0 and sid == 0 then
-        --处理客户端心跳，超时的关闭
-        skynet.error("心跳", os.date("%Y-%m-%d %H:%M:%S", os.time()))
+        -- skynet.error("心跳", "mid=" .. ssmid, "sid=" .. sid, os.date("%Y-%m-%d %H:%M:%S", os.time()))
         return
     end
 
@@ -99,53 +93,56 @@ function handle.message(sock_id, msg)
     local head = {
         mid = pk:mid(),
         sid = pk:sid(),
-        clientId = skynet.self(),
+        clientId = clientId,
+        serviceId = skynet.self(),
     }
 
-    -- 包体内容
+    -- 内容
     local content = {
         data = pk:data()
     }
 
-    local forwardMessage = function(head, content)
-        if handle.debug then
-            -- dump(head, handle.servername .. ".head")
-            -- dump(content, handle.servername .. ".content")
-        end
-        skyhelper.send(center_proxy_server_id, "service_message", head, content)
+    if handle.debug then
+        -- dump(head, handle.servername .. ".head")
+        -- dump(content, handle.servername .. ".content")
     end
-    skynet.fork(forwardMessage, head, content)
+
+    -- 消息分发
+    mgr.dispatch(head, content)
 end
 
 function handle.ping(sock_id)
-    skynet.error("ws ping from: " .. tostring(sock_id) .. "\n")
+    -- skynet.error("ws ping from: " .. tostring(sock_id) .. "\n")
 end
 
 function handle.pong(sock_id)
-    skynet.error("ws pong from: " .. tostring(sock_id))
+    -- skynet.error("ws pong from: " .. tostring(sock_id))
 end
 
 function handle.close(sock_id, code, reason)
-    skynet.error("ws close from: " .. tostring(sock_id), code, reason)
+    -- skynet.error("ws close from: " .. tostring(sock_id), code, reason)
     skynet.exit()
 end
 
 function handle.error(sock_id)
-    skynet.error("ws error from: " .. tostring(sock_id))
+    -- skynet.error("ws error from: " .. tostring(sock_id))
     skynet.exit()
 end
 
-function handle.send(sock_id, mid, sid, clientid, content)
+function handle.send(sock_id, head, content)
     local pk = packet:new()
-    pk:pack(mid, sid, clientid, content)
-    websocket.write(sock_id, pk:data(), "binary", 0x02)
+    pk:pack(head.mid, head.sid, head.clientId, content)
+    local ok = pcall(websocket.write, sock_id, pk:data(), "binary", 0x02)
+    if not ok then
+        skynet.error("websocket.write error")
+    end
 end
 
--- skynet.init(
---     function()
---         skynet.error("agent init")
---     end
--- )
+skynet.init(
+    function()
+        skynet.register(handle.servername)
+    end
+)
 
 local function dispatch()
     -- skynet.dispatch(
@@ -173,7 +170,6 @@ local function dispatch()
             end
         end
     )
-    skynet.register(handle.servername)
 end
 
 skynet.start(dispatch)

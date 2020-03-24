@@ -59,7 +59,7 @@ function CMD.stop()
 end
 
 -- REDIS服务·消息处理接口
-function CMD.server_message(head, content)
+function CMD.on_server_message(head, content)
 	assert(head ~= nil and type(head) == "table")
     assert(content ~= nil and type(content) == "table")
 	return mgr.dispatch(CMD.redisConn, head, content)

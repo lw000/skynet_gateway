@@ -12,7 +12,7 @@ function logic.onReqRegist(head, content)
     -- dump(head, "head")
     -- dump(content, "reqRegist")
 
-    local reply = skyhelper.call(SERVICE_TYPE.DB.NAME, "server_message", head, content)
+    local reply = skyhelper.call(SERVICE_TYPE.DB.NAME, "on_server_message", head, content)
     return reply
 end
 
@@ -21,7 +21,7 @@ function logic.onReqLogin(head, content)
     -- dump(head, "head")
     -- dump(content, "reqLogin")
 
-    local reply = skyhelper.call(SERVICE_TYPE.DB.NAME, "server_message", head, content)
+    local reply = skyhelper.call(SERVICE_TYPE.DB.NAME, "on_server_message", head, content)
     return reply
 end
 

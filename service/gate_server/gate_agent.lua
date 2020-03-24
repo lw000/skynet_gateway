@@ -36,20 +36,6 @@ function handle.stop()
 
 end
 
-function handle.service_message(head, content)
-    if handle.debug then
-        -- dump(head, handle.servername .. ".head")
-        -- dump(content, handle.servername .. ".content")
-    end
-    -- skynet.fork(function (head, content)
-    --     handle.send(handle.sock_id, head.mid, head.sid, head.clientId, content.data)
-    -- end, head, content)
-
-    skynet.fork(function (head, content)
-        handle.send(handle.sock_id, content.data)
-    end, head, content)
-end
-
 function handle.connect(sock_id)
     handle.sock_id = sock_id
     -- skynet.error("ws connect from: " .. tostring(sock_id))
@@ -97,76 +83,60 @@ function handle.message(sock_id, msg)
         return
     end
 
-    -- 包头
-    local head = {
-        mid = pk:mid(),
-        sid = pk:sid(),
-        clientId = skynet.self(),
-    }
-
-    -- 包体内容
+    -- 包内容
     local content = {
+        mid = mid,
+        sid = sid,
+        clientId = skynet.self(),
         data = pk:data()
     }
 
-    local forwardMessage = function(head, content)
-        if handle.debug then
-            dump(head, handle.servername .. ".head")
-            dump(content, handle.servername .. ".content")
-        end
-        skyhelper.send(center_proxy_server_id, "service_message", head, content)
+    if handle.debug then
+        dump(content, handle.servername .. ".content")
     end
-    skynet.fork(forwardMessage, head, content)
+
+    skyhelper.send(center_proxy_server_id, "send_center_message", content)
 end
 
 function handle.ping(sock_id)
-    skynet.error("ws ping from: " .. tostring(sock_id) .. "\n")
+    -- skynet.error("ws ping from: " .. tostring(sock_id) .. "\n")
 end
 
 function handle.pong(sock_id)
-    skynet.error("ws pong from: " .. tostring(sock_id))
+    -- skynet.error("ws pong from: " .. tostring(sock_id))
 end
 
 function handle.close(sock_id, code, reason)
-    skynet.error("ws close from: " .. tostring(sock_id), code, reason)
+    -- skynet.error("ws close from: " .. tostring(sock_id), code, reason)
     skynet.exit()
 end
 
 function handle.error(sock_id)
-    skynet.error("ws error from: " .. tostring(sock_id))
+    -- skynet.error("ws error from: " .. tostring(sock_id))
     skynet.exit()
 end
 
--- function handle.send(sock_id, mid, sid, clientid, content)
---     local pk = packet:new()
---     pk:pack(mid, sid, clientid, content)
---     websocket.write(sock_id, pk:data(), "binary", 0x02)
--- end
-
-function handle.send(sock_id, data)
-    websocket.write(sock_id, data, "binary", 0x02)
+function handle.send_client_message(content)
+    if handle.debug then
+        dump(content, handle.servername .. ".content")
+    end
+    handle.send(handle.sock_id, content.data)
 end
 
--- skynet.init(
---     function()
---         skynet.error("agent init")
---     end
--- )
+function handle.send(sock_id, data)
+    local ok = pcall(websocket.write, sock_id, data, "binary", 0x02)
+    if not ok then
+        skynet.error("websocket.write error")
+    end
+end
+
+skynet.init(
+    function()
+        skynet.register(handle.servername)
+    end
+)
 
 local function dispatch()
-    -- skynet.dispatch(
-    --     "lua",
-    --     function(session, address, sock_id, protocol, addr, center_server)
-    --         handle.center_server = center_server
-    --         -- skynet.error("accept sock_id=" .. sock_id .. " addr=" .. skynet.address(address) .. " addr=" .. addr)
-    --         skynet.error("accept sock_id=" .. sock_id .. " addr=" .. addr)
-    --         local ok, err = websocket.accept(sock_id, handle, protocol, addr)
-    --         if err then
-    --             skynet.error(err)
-    --         end
-    --     end
-    -- )
-
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
@@ -179,7 +149,6 @@ local function dispatch()
             end
         end
     )
-    skynet.register(handle.servername)
 end
 
 skynet.start(dispatch)

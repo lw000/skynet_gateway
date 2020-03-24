@@ -72,15 +72,11 @@ function CMD.stop()
 
 end
 
-function CMD.service_message(head, content)
+function CMD.send_center_message(content)
     if CMD.debug then
-        dump(head, CMD.servername .. ".head")
         dump(content, CMD.servername .. ".content")
     end
-
-    skynet.fork(function (head, content)
-        CMD.sendWithClientId(head.mid, head.sid, head.clientId, content.data)
-    end, head, content)
+    CMD.sendWithClientId(content.mid, content.sid, content.clientId, content.data)
 end
 
 function CMD.registerService()
@@ -115,11 +111,15 @@ function CMD.sendWithClientId(mid, sid, clientId, data, fn)
         skynet.error("create packet error")
         return
     end
+
     if fn then
         hub.register(mid, sid, fn)
     end
 
-    CMD.sendBuff(pk:data())
+    local ok, ret = pcall(CMD.sendBuff, pk:data())
+    if not ok then
+        skynet.error(ret)
+    end
 end
 
 function CMD.send(mid, sid, data, fn)
@@ -133,79 +133,31 @@ function CMD.on_message(msg)
     local mid = pk:mid()
     local sid = pk:sid()
 
+    -- 代理服务内部消息分发
     if hub.dispatchMessage(mid, sid, pk:data()) then
         return
     end
 
+    -- 转发到客户端gate_agent服务
     local clientId = pk:clientId()
     local content = {
         data = msg
     }
-
-    local forwardMessage = function(clientId, content)
-        if CMD.debug then
-            -- dump(head, CMD.servername .. ".head")
-            -- dump(content, CMD.servername .. ".content")
-        end  
-        skyhelper.send(clientId, "service_message", nil, content)
+    local ok, ret = pcall(skyhelper.send, clientId, "send_client_message", content)
+    if not ok then
+        skynet.error(ret)
     end
-    skynet.fork(forwardMessage, clientId, content)
 end
-
--- function CMD.on_message(pk)
---     local mid = pk:mid()
---     local sid = pk:sid()
---     local ver = pk:ver()
---     local checkCode = pk:checkCode()
---     local clientId = pk:clientId()
-
---     -- 检查版本
---     if ver >= 0 then
---         -- body
---     end
-
---     -- 包校验码检查
---     if checkCode ~= 123456 then
---         -- body
---     end
-
---     if CMD.debug then
---         skynet.error(CMD.servername .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
---     end
-
---     -- 包头
---     local head = {
---         mid = mid,
---         sid = sid,
---         ver = ver,
---         checkCode = checkCode,
---         clientId = clientId,
---     }
-
---     -- 内容
---     local content = {
---         data = pk:data()
---     }
-
---     local forwardMessage = function(clientId, head, content)
---         if CMD.debug then
---             -- dump(head, CMD.servername .. ".head")
---             -- dump(content, CMD.servername .. ".content")
---         end  
---         skyhelper.send(clientId, "service_message", head, content)
---     end
---     skynet.fork(forwardMessage, clientId, head, content)
--- end
 
 function CMD.on_error(err)
     skynet.error(err)
 end
 
--- skynet.init(
---     function()
---         skynet.error("ws_client init ......")
---     end
--- )
+skynet.init(
+    function()
+        skynet.register(CMD.servername)
+    end
+)
 
 local function dispatch()
     skynet.dispatch(
@@ -220,7 +172,6 @@ local function dispatch()
             end
         end
     )
-    skynet.register(CMD.servername)
 end
 
 skynet.start(dispatch)

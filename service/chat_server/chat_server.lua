@@ -38,7 +38,7 @@ function CMD.stop()
 end
 
 -- 登录服·消息处理接口
-function CMD.server_message(head, content)
+function CMD.on_server_message(head, content)
     assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
 
@@ -48,7 +48,7 @@ function CMD.server_message(head, content)
 
     -- skynet.error("rand chat_logic_server index:", index)
 
-    return skyhelper.call(chat_logic_servers[index], "server_message", head, content)
+    return skyhelper.call(chat_logic_servers[index], "on_server_message", head, content)
 end
 
 local function dispatch()
