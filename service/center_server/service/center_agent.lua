@@ -8,47 +8,46 @@ require("skynet.manager")
 require("service_config.type")
 require("proto_map.proto_map")
 
-local center_server_id = -1
+local center = ...
 
-local handle = {
+local handler = {
     servername = ".center_agent",
     debug = false,
     sock_id = -1,
 }
 
-function handle.start(sock_id, protocol, addr, content)
-    handle.debug = content.debug
-    center_server_id = content.center_server_id
+function handler.start(sock_id, protocol, addr, content)
+    handler.debug = content.debug
 
-    local ok, err = websocket.accept(sock_id, handle, protocol, addr)
+    local ok, err = websocket.accept(sock_id, handler, protocol, addr)
     if err then
         skynet.error(err)
         return 1, "websocket.accept fail"
     end
 
-    mgr.start(handle.servername, handle.debug)
+    mgr.start(handler.servername, handler.debug)
 
     return 0
 end
 
-function handle.stop()
+function handler.stop()
     mgr.stop()
 end
 
-function handle.service_message(head, content)
-    if handle.debug then
-        dump(head, handle.servername .. ".head")
-        dump(content, handle.servername .. ".content")
+function handler.service_message(head, content)
+    if handler.debug then
+        dump(head, handler.servername .. ".head")
+        dump(content, handler.servername .. ".content")
     end
-    handle.send(handle.sock_id, head, content)
+    handler.send(handler.sock_id, head, content)
 end
 
-function handle.connect(sock_id)
-    handle.sock_id = sock_id
+function handler.connect(sock_id)
+    handler.sock_id = sock_id
     -- skynet.error("ws connect from: " .. tostring(sock_id))
 end
 
-function handle.handshake(sock_id, header, url)
+function handler.handshake(sock_id, header, url)
     local addr = websocket.addrinfo(sock_id)
     -- skynet.error("ws handshake from", "addr=" .. addr, "url=" .. url)
     
@@ -59,7 +58,7 @@ function handle.handshake(sock_id, header, url)
     -- skynet.error("--------------")
 end
 
-function handle.message(sock_id, msg)
+function handler.message(sock_id, msg)
     local pk = packet:new()
     pk:unpack(msg)
 
@@ -79,8 +78,8 @@ function handle.message(sock_id, msg)
         -- body
     end
 
-    if handle.debug then
-        skynet.error(handle.servername .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
+    if handler.debug then
+        skynet.error(handler.servername .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
     end
 
     -- 心跳消息处理
@@ -102,34 +101,34 @@ function handle.message(sock_id, msg)
         data = pk:data()
     }
 
-    if handle.debug then
-        -- dump(head, handle.servername .. ".head")
-        -- dump(content, handle.servername .. ".content")
+    if handler.debug then
+        -- dump(head, handler.servername .. ".head")
+        -- dump(content, handler.servername .. ".content")
     end
 
     -- 消息分发
     mgr.dispatch(head, content)
 end
 
-function handle.ping(sock_id)
+function handler.ping(sock_id)
     -- skynet.error("ws ping from: " .. tostring(sock_id) .. "\n")
 end
 
-function handle.pong(sock_id)
+function handler.pong(sock_id)
     -- skynet.error("ws pong from: " .. tostring(sock_id))
 end
 
-function handle.close(sock_id, code, reason)
+function handler.close(sock_id, code, reason)
     -- skynet.error("ws close from: " .. tostring(sock_id), code, reason)
     skynet.exit()
 end
 
-function handle.error(sock_id)
+function handler.error(sock_id)
     -- skynet.error("ws error from: " .. tostring(sock_id))
     skynet.exit()
 end
 
-function handle.send(sock_id, head, content)
+function handler.send(sock_id, head, content)
     local pk = packet:new()
     pk:pack(head.mid, head.sid, head.clientId, content)
     local ok = pcall(websocket.write, sock_id, pk:data(), "binary", 0x02)
@@ -140,7 +139,7 @@ end
 
 skynet.init(
     function()
-        skynet.register(handle.servername)
+        skynet.register(handler.servername)
     end
 )
 
@@ -148,10 +147,10 @@ local function dispatch()
     -- skynet.dispatch(
     --     "lua",
     --     function(session, address, sock_id, protocol, addr, center_server)
-    --         handle.center_server = center_server
+    --         handler.center_server = center_server
     --         -- skynet.error("accept sock_id=" .. sock_id .. " addr=" .. skynet.address(address) .. " addr=" .. addr)
     --         skynet.error("accept sock_id=" .. sock_id .. " addr=" .. addr)
-    --         local ok, err = websocket.accept(sock_id, handle, protocol, addr)
+    --         local ok, err = websocket.accept(sock_id, handler, protocol, addr)
     --         if err then
     --             skynet.error(err)
     --         end
@@ -161,7 +160,7 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            local f = handle[cmd]
+            local f = handler[cmd]
             assert(f)
             if session == 0 then
                 f(...)

@@ -36,10 +36,9 @@ function CMD.listen()
     skynet.error(string.format("listen port:" .. CMD.port))
     
     socket.start(CMD.sockt_listen_id, function(id, addr)
-        local agent = skynet.newservice("service/center_agent")
+        local agent = skynet.newservice("service/center_agent", skynet.self())
         skynet.send(agent, "lua", "start", id, CMD.protocol, addr, {
             debug = CMD.debug,
-            center_server_id = skynet.self(),
         })
     end)
 end

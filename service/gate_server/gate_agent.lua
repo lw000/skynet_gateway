@@ -7,23 +7,21 @@ require("skynet.manager")
 require("service_config.type")
 require("proto_map.proto_map")
 
-local gate_server_id = -1
+local gate = ...
 
-local center_proxy_server_id = -1
-
-local handle = {
+local handler = {
     servername = ".gate_agent",
     debug = false,
     sock_id = -1,
+    center_proxy_server_id = -1
 }
 
-function handle.start(sock_id, protocol, addr, content)
+function handler.start(sock_id, protocol, addr, content)
     -- dump(content, "content")
-    handle.debug = content.debug
-    gate_server_id = content.gate_server_id
-    center_proxy_server_id = content.center_proxy_server_id
+    handler.debug = content.debug
+    handler.center_proxy_server_id = content.center_proxy_server_id
 
-    local ok, err = websocket.accept(sock_id, handle, protocol, addr)
+    local ok, err = websocket.accept(sock_id, handler, protocol, addr)
     if err then
         skynet.error(err)
         return 1, "websocket.accept fail"
@@ -32,16 +30,16 @@ function handle.start(sock_id, protocol, addr, content)
     return 0
 end
 
-function handle.stop()
+function handler.stop()
 
 end
 
-function handle.connect(sock_id)
-    handle.sock_id = sock_id
+function handler.connect(sock_id)
+    handler.sock_id = sock_id
     -- skynet.error("ws connect from: " .. tostring(sock_id))
 end
 
-function handle.handshake(sock_id, header, url)
+function handler.handshake(sock_id, header, url)
     local addr = websocket.addrinfo(sock_id)
     -- skynet.error("ws handshake from", "addr=" .. addr, "url=" .. url)
     
@@ -52,7 +50,7 @@ function handle.handshake(sock_id, header, url)
     -- skynet.error("--------------")
 end
 
-function handle.message(sock_id, msg)
+function handler.message(sock_id, msg)
     local pk = packet:new()
     pk:unpack(msg)
 
@@ -72,8 +70,8 @@ function handle.message(sock_id, msg)
         -- body
     end
 
-    if handle.debug then
-        skynet.error(handle.servername .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
+    if handler.debug then
+        skynet.error(handler.servername .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
     end
 
     -- 心跳消息处理
@@ -91,39 +89,39 @@ function handle.message(sock_id, msg)
         data = pk:data()
     }
 
-    if handle.debug then
-        dump(content, handle.servername .. ".content")
+    if handler.debug then
+        dump(content, handler.servername .. ".content")
     end
 
-    skyhelper.send(center_proxy_server_id, "send_center_message", content)
+    skyhelper.send(handler.center_proxy_server_id, "send_center_message", content)
 end
 
-function handle.ping(sock_id)
+function handler.ping(sock_id)
     -- skynet.error("ws ping from: " .. tostring(sock_id) .. "\n")
 end
 
-function handle.pong(sock_id)
+function handler.pong(sock_id)
     -- skynet.error("ws pong from: " .. tostring(sock_id))
 end
 
-function handle.close(sock_id, code, reason)
+function handler.close(sock_id, code, reason)
     -- skynet.error("ws close from: " .. tostring(sock_id), code, reason)
     skynet.exit()
 end
 
-function handle.error(sock_id)
+function handler.error(sock_id)
     -- skynet.error("ws error from: " .. tostring(sock_id))
     skynet.exit()
 end
 
-function handle.send_client_message(content)
-    if handle.debug then
-        dump(content, handle.servername .. ".content")
+function handler.send_client_message(content)
+    if handler.debug then
+        dump(content, handler.servername .. ".content")
     end
-    handle.send(handle.sock_id, content.data)
+    handler.send(handler.sock_id, content.data)
 end
 
-function handle.send(sock_id, data)
+function handler.send(sock_id, data)
     local ok = pcall(websocket.write, sock_id, data, "binary", 0x02)
     if not ok then
         skynet.error("websocket.write error")
@@ -132,7 +130,7 @@ end
 
 skynet.init(
     function()
-        skynet.register(handle.servername)
+        skynet.register(handler.servername)
     end
 )
 
@@ -140,7 +138,7 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            local f = handle[cmd]
+            local f = handler[cmd]
             assert(f)
             if session == 0 then
                 f(...)

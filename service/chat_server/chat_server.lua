@@ -47,8 +47,8 @@ function CMD.on_server_message(head, content)
     local index = head.serviceId % (#chat_logic_servers+1)
 
     -- skynet.error("rand chat_logic_server index:", index)
-
-    return skyhelper.call(chat_logic_servers[index], "on_server_message", head, content)
+    local chat_logic_server = chat_logic_servers[index]
+    return skyhelper.call(chat_logic_server, "on_server_message", head, content)
 end
 
 local function dispatch()

@@ -12,7 +12,7 @@ require("service_config.cmd")
 require("service_config.type")
 require("proto_map.proto_func")
 
-local gate_server_id = -1
+local gate = ...
 
 local CMD = {
     servername = ".center_proxy",
@@ -28,7 +28,6 @@ function CMD.start(scheme, host, content)
     CMD.scheme = scheme
     CMD.host = host
     CMD.debug = content.debug
-    gate_server_id = content.gate_server_id
 
     CMD.client:handleMessage(CMD.on_message)
     CMD.client:handleError(CMD.on_error)

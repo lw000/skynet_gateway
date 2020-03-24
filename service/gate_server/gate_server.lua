@@ -28,11 +28,10 @@ function CMD.start(content)
 
     local host = string.format("%s:%d", CMD.centerIP, CMD.centerPort)
     for i=0, 9 do
-        local center_proxy = skynet.newservice("proxy/center_proxy")
+        local center_proxy = skynet.newservice("proxy/center_proxy", skynet.self())
         center_proxy_servers[i] = center_proxy
         skynet.call(center_proxy, "lua", "start", "ws", host, {
             debug = content.debug,
-            gate_server_id = skynet.self(),
         })
     end
     -- dump(center_proxy_servers, "center_proxy_servers")
@@ -54,7 +53,7 @@ function CMD.listen()
     skynet.error(string.format("listen port:" .. CMD.port))
     
     socket.start(CMD.sockt_listen_id, function(id, addr)
-        local agent = skynet.newservice("gate_agent")
+        local agent = skynet.newservice("gate_agent", skynet.self())
         -- CMD.agents[agent] = agent
         local center_proxy_server_length = #center_proxy_servers+1
         local index = agent % center_proxy_server_length
