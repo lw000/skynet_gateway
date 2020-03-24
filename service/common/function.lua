@@ -7,6 +7,24 @@ local string = require("string")
 local io = require("io")
 local table = require("table")
 
+function shuffle(t)
+    if type(t)~="table" then
+        return
+    end
+    local tab={}
+    local index=1
+    while #t~=0 do
+        local n = math.random(0, #t)
+        if t[n] ~=nil then
+            tab[index] = t[n]
+            table.remove(t, n)
+            index = index + 1
+        end
+    end
+    return tab
+end
+
+
 -- 四舍五入
 function round_four(n)
     local v1, v2 = math.modf(n)

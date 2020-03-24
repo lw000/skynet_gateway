@@ -12,8 +12,6 @@ local CMD = {
     debug = false,
     port = 8081,
     protocol = "ws",
-    -- agents = {},
-    sockt_listen_id = -1,
 }
 
 function CMD.start(content)
@@ -22,22 +20,22 @@ function CMD.start(content)
     assert(CMD.port > 0)
 
     CMD.listen()
+
     return 0
 end
 
 function CMD.stop()
-    socket.close(CMD.sockt_listen_id)
+
 end
 
 function CMD.listen()
-    CMD.sockt_listen_id = socket.listen("0.0.0.0", CMD.port)
-    assert(CMD.sockt_listen_id ~= -1, "listen fail")
+    local fd = socket.listen("0.0.0.0", CMD.port)
 
-    skynet.error(string.format("listen port:" .. CMD.port))
+    skynet.error(string.format("ws listen port:" .. CMD.port))
     
-    socket.start(CMD.sockt_listen_id, function(id, addr)
+    socket.start(fd, function(id, addr)
         local agent = skynet.newservice("service/center_agent", skynet.self())
-        skynet.send(agent, "lua", "start", id, CMD.protocol, addr, {
+        skynet.send(agent, "lua", "accept", id, CMD.protocol, addr, {
             debug = CMD.debug,
         })
     end)
@@ -55,6 +53,7 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
+            -- skynet.error(CMD.servername .. " recved:",session, address, cmd, ...)
             local f = CMD[cmd]
             assert(f)
             if session == 0 then

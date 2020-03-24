@@ -12,16 +12,16 @@ local gate = ...
 local handler = {
     servername = ".gate_agent",
     debug = false,
-    sock_id = -1,
+    fd = -1,
     center_proxy_server_id = -1
 }
 
-function handler.start(sock_id, protocol, addr, content)
+function handler.accept(fd, protocol, addr, content)
     -- dump(content, "content")
     handler.debug = content.debug
     handler.center_proxy_server_id = content.center_proxy_server_id
 
-    local ok, err = websocket.accept(sock_id, handler, protocol, addr)
+    local ok, err = websocket.accept(fd, handler, protocol, addr)
     if err then
         skynet.error(err)
         return 1, "websocket.accept fail"
@@ -30,17 +30,13 @@ function handler.start(sock_id, protocol, addr, content)
     return 0
 end
 
-function handler.stop()
-
+function handler.connect(fd)
+    handler.fd = fd
+    -- skynet.error("ws connect from: " .. tostring(fd))
 end
 
-function handler.connect(sock_id)
-    handler.sock_id = sock_id
-    -- skynet.error("ws connect from: " .. tostring(sock_id))
-end
-
-function handler.handshake(sock_id, header, url)
-    local addr = websocket.addrinfo(sock_id)
+function handler.handshake(fd, header, url)
+    local addr = websocket.addrinfo(fd)
     -- skynet.error("ws handshake from", "addr=" .. addr, "url=" .. url)
     
     -- skynet.error("----header-----")
@@ -50,7 +46,7 @@ function handler.handshake(sock_id, header, url)
     -- skynet.error("--------------")
 end
 
-function handler.message(sock_id, msg)
+function handler.message(fd, msg)
     local pk = packet:new()
     pk:unpack(msg)
 
@@ -96,21 +92,21 @@ function handler.message(sock_id, msg)
     skyhelper.send(handler.center_proxy_server_id, "send_center_message", content)
 end
 
-function handler.ping(sock_id)
-    -- skynet.error("ws ping from: " .. tostring(sock_id) .. "\n")
+function handler.ping(fd)
+    -- skynet.error("ws ping from: " .. tostring(fd) .. "\n")
 end
 
-function handler.pong(sock_id)
-    -- skynet.error("ws pong from: " .. tostring(sock_id))
+function handler.pong(fd)
+    -- skynet.error("ws pong from: " .. tostring(fd))
 end
 
-function handler.close(sock_id, code, reason)
-    -- skynet.error("ws close from: " .. tostring(sock_id), code, reason)
+function handler.close(fd, code, reason)
+    -- skynet.error("ws close from: " .. tostring(fd), code, reason)
     skynet.exit()
 end
 
-function handler.error(sock_id)
-    -- skynet.error("ws error from: " .. tostring(sock_id))
+function handler.error(fd)
+    -- skynet.error("ws error from: " .. tostring(fd))
     skynet.exit()
 end
 
@@ -118,11 +114,11 @@ function handler.send_client_message(content)
     if handler.debug then
         dump(content, handler.servername .. ".content")
     end
-    handler.send(handler.sock_id, content.data)
+    handler.send(handler.fd, content.data)
 end
 
-function handler.send(sock_id, data)
-    local ok = pcall(websocket.write, sock_id, data, "binary", 0x02)
+function handler.send(fd, data)
+    local ok = pcall(websocket.write, fd, data, "binary", 0x02)
     if not ok then
         skynet.error("websocket.write error")
     end

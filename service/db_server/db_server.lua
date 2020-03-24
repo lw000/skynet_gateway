@@ -36,7 +36,7 @@ function CMD.start(conf)
     -- 设置随机种子
     math.randomseed(os.time())
 
-    for i=0, 9 do
+    for i=1, 10 do
         local db_logic_server = skynet.newservice("service/db_logic_server")
         db_logic_servers[i] = db_logic_server
         skynet.call(db_logic_server, "lua", "start", {
@@ -59,9 +59,9 @@ function CMD.on_server_message(head, content)
     assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
 
-    local index = head.serviceId % (#db_logic_servers+1)
+    local index = (head.serviceId % #db_logic_servers)+1
 
-    -- skynet.error("rand db_logic_server index:", index)
+    skynet.error("rand db_logic_server index:", index)
 
     return skyhelper.call(db_logic_servers[index], "on_server_message", head, content)
 end

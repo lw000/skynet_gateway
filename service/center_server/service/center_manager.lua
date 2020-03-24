@@ -23,10 +23,6 @@ function manager.start(servername, debug)
     manager.servername = servername
 end
 
-function manager.stop()
-
-end
-
 function manager.dispatch(head, content)
     assert(head ~= nil)
 

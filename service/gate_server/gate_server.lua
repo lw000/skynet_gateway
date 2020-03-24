@@ -16,7 +16,6 @@ local CMD = {
     centerIP = "127.0.0.1",
     protocol = "ws",
     -- agents = {},
-    sockt_listen_id = -1,
 }
 
 function CMD.start(content)
@@ -27,12 +26,12 @@ function CMD.start(content)
     assert(CMD.port > 0)
 
     local host = string.format("%s:%d", CMD.centerIP, CMD.centerPort)
-    for i=0, 9 do
+    for i=1, 10 do
         local center_proxy = skynet.newservice("proxy/center_proxy", skynet.self())
-        center_proxy_servers[i] = center_proxy
         skynet.call(center_proxy, "lua", "start", "ws", host, {
             debug = content.debug,
         })
+        center_proxy_servers[i] = center_proxy
     end
     -- dump(center_proxy_servers, "center_proxy_servers")
 
@@ -42,31 +41,26 @@ function CMD.start(content)
 end
 
 function CMD.stop()
-    backend.stop()
-    socket.close(CMD.sockt_listen_id)
+    socket.close(CMD.fd)
 end
 
 function CMD.listen()
-    CMD.sockt_listen_id = socket.listen("0.0.0.0", CMD.port)
-    assert(CMD.sockt_listen_id ~= -1, "listen fail")
+    local fd = socket.listen("0.0.0.0", CMD.port)
+    assert(fd ~= -1, "listen fail")
 
     skynet.error(string.format("listen port:" .. CMD.port))
     
-    socket.start(CMD.sockt_listen_id, function(id, addr)
+    socket.start(fd, function(id, addr)
         local agent = skynet.newservice("gate_agent", skynet.self())
         -- CMD.agents[agent] = agent
-        local center_proxy_server_length = #center_proxy_servers+1
-        local index = agent % center_proxy_server_length
+        local index = (agent % #center_proxy_servers)+1
+        
+        skynet.error("chat_logic_servers index:", index)
+
         local center_proxy_server_id = center_proxy_servers[index]
-        -- skynet.error(
-        --     "agent=", agent,
-        --     "index=", index,
-        --     "center_proxy_server_id=", center_proxy_server_id
-        -- )
-        skynet.send(agent, "lua", "start", id, CMD.protocol, addr, {
+        skynet.send(agent, "lua", "accept", id, CMD.protocol, addr, {
             debug = CMD.debug,
             center_proxy_server_id = center_proxy_server_id,
-            gate_server = skynet.self(),
         })
     end)
 end

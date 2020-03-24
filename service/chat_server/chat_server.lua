@@ -20,7 +20,7 @@ function CMD.start(content)
 
     CMD.debug = content.debug
 
-    for i=0, 9 do
+    for i=1, 10 do
         local chat_logic_server = skynet.newservice("service/chat_logic_server")
         chat_logic_servers[i] = chat_logic_server
         skynet.call(chat_logic_server, "lua", "start", {
@@ -44,9 +44,10 @@ function CMD.on_server_message(head, content)
 
     -- dump(head, "head")
 
-    local index = head.serviceId % (#chat_logic_servers+1)
+    local index = (head.serviceId % #chat_logic_servers)+1
 
-    -- skynet.error("rand chat_logic_server index:", index)
+    skynet.error("chat_logic_servers index:", index)
+
     local chat_logic_server = chat_logic_servers[index]
     return skyhelper.call(chat_logic_server, "on_server_message", head, content)
 end

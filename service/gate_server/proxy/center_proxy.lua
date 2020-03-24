@@ -39,27 +39,10 @@ function CMD.start(scheme, host, content)
     CMD.running = true
 
     -- 心跳处理
-    timer.start(30, function()
-        if CMD.client:open() then
-            CMD.send(0x0000, 0x0000, 0, nil, nil)
-        end
-    end)
+    timer.start(30, CMD.heatbeat)
 
     -- 网络断线检查
-    timer.start(CMD.keepalive, function()
-        local open = CMD.client:open()
-        if not open then
-            skynet.error("reconnect to server")
-            local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
-            if err ~= nil then
-                skynet.error(ok, err)  
-            end
-            open = CMD.client:open()
-            if open then
-                CMD.registerService()
-            end
-        end
-    end)
+    timer.start(CMD.keepalive, CMD.tick)
 
     -- 注册服务
     CMD.registerService()
@@ -69,6 +52,29 @@ end
 
 function CMD.stop()
 
+end
+
+-- 心跳检查
+function CMD.heatbeat()
+    if CMD.client:open() then
+        CMD.send(0x0000, 0x0000, 0, nil, nil)
+    end
+end
+
+-- 连接检查
+function CMD.tick()
+    local open = CMD.client:open()
+    if not open then
+        skynet.error("reconnect to server")
+        local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
+        if err ~= nil then
+            skynet.error(ok, err)  
+        end
+        open = CMD.client:open()
+        if open then
+            CMD.registerService()
+        end
+    end
 end
 
 function CMD.send_center_message(content)
@@ -162,6 +168,7 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
+            -- skynet.error(CMD.servername .. " recved:",session, address, cmd, ...)
             local f = CMD[cmd]
             assert(f)
             if session == 0 then

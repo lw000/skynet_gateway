@@ -37,6 +37,21 @@ local function onStart()
         skynet.error(ret, err)
         return
     end
+
+    local sessions = {}
+    sessions[1] = {a=1, b=1}
+    sessions[2] = {a=2, b=2}
+    sessions[3] = {a=3, b=3}
+    sessions[4] = {a=4, b=4}
+    dump(sessions, "sessions")
+    sessions[2] = nil
+    sessions[3] = nil
+    dump(sessions, "sessions")
+
+    local users = {{0,1},{1,2},{2,3},{3,4},{4,5},{5,6},{6,7},{7,8},{8,9}}
+    users = shuffle(users)
+    dump(users, "users")
+
     skynet.exit()
 end
 
