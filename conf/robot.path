@@ -12,6 +12,6 @@ cpath = root.."lib/cservice/?.so"
  
 -- 使用Lua语言编写的Skynet核心服务与自定义的服务
 luaservice = root.."lib/service/?.lua;"..root.."service/?.lua;"
-    ..root.."service/ws_client/?.lua;"
+    ..root.."service/robot_server/?.lua;"
  
 lualoader = root.."lib/lualib/loader.lua"
