@@ -14,8 +14,8 @@ require("proto_map.proto_func")
 local CMD = {
     scheme = "ws",
     host = "127.0.0.1",
-    running = false,
-    aliveTime = 2,
+    tick_s = 5,
+    keepalive_s = 3,
     client = ws:new()
 }
 
@@ -24,37 +24,18 @@ function CMD.start(scheme, host, content)
     CMD.password = content.password
     CMD.scheme = scheme
     CMD.host = host
-    CMD.client:handleMessage(CMD.on_message)
-    CMD.client:handleError(CMD.on_error)
+    CMD.client:handleMessage(CMD.message)
+    CMD.client:handleError(CMD.error)
     local ok, err = CMD.client:connect(scheme, host)
     if err then
         return 1, "connect fail"
     end
 
-    CMD.running = true
+    -- 心跳
+    timer.start(CMD.tick_s, CMD.tick)
 
-    -- 心跳处理
-    timer.start(30, function()
-        if CMD.client:open() then
-            CMD.send(0x0000, 0x0000, 0, nil)
-        end
-    end)
-
-    -- 网络断线检查
-    timer.start(CMD.aliveTime, function()
-        local open = CMD.client:open()
-        if not open then
-            skynet.error("reconnect to server")
-            local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
-            if err ~= nil then
-                skynet.error(ok, err)
-            end
-            open = CMD.client:open()
-            if open then
-                CMD.regist()
-            end
-        end
-    end)
+    -- 连接检查
+    timer.start(CMD.keepalive_s, CMD.keepalive)
 
     -- 注册账号，登录账号
     skynet.fork(CMD.regist)
@@ -63,8 +44,31 @@ function CMD.start(scheme, host, content)
 end
 
 function CMD.stop()
-    CMD.running = false
     timer.stop()
+end
+
+-- 心跳
+function CMD.tick()
+    if CMD.client:open() then
+        CMD.send(0x0000, 0x0000, nil, nil)
+        -- CMD.client:ping()
+    end
+end
+
+-- 连接检查
+function CMD.keepalive()
+    local open = CMD.client:open()
+    if not open then
+        skynet.error("reconnect to server")
+        local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
+        if err ~= nil then
+            skynet.error(ok, err)
+        end
+        open = CMD.client:open()
+        if open then
+            CMD.regist()
+        end
+    end
 end
 
 -- 注册账号
@@ -147,7 +151,7 @@ function CMD.send(mid, sid, data, fn)
     return CMD.sendWithClientId(mid, sid, 0, data, fn)
 end
 
-function CMD.on_message(msg)
+function CMD.message(msg)
     local pk = packet:new()
     pk:unpack(msg)
     local mid = pk:mid()
@@ -155,15 +159,15 @@ function CMD.on_message(msg)
     hub.dispatchMessage(mid, sid, pk:data())
 end
 
-function CMD.on_error(err)
+function CMD.error(err)
     skynet.error(err)
 end
 
--- skynet.init(
---     function()
---         skynet.error("ws_client init")
---     end
--- )
+skynet.init(
+    function()
+        skynet.register(".robot_server")
+    end
+)
 
 local function dispatch()
     skynet.dispatch(
@@ -178,7 +182,7 @@ local function dispatch()
             end
         end
     )
-    skynet.register(".ws_client")
+    
 end
 
 skynet.start(dispatch)

@@ -174,6 +174,10 @@ function WSClient:loopRead()
     end
 end
 
+function WSClient:ping()
+    self._websocket.ping(self._wsid)
+end
+
 function WSClient:dubug(debug)
     assert(debug ~= nil and type(debug) == "boolean", "debug value must is boolean")
     self._debug = debug

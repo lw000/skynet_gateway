@@ -62,6 +62,10 @@ function WSClient:connect(scheme, host, path)
     return 0
 end
 
+function WSClient:ping()
+    self._websocket.ping(self._wsid)
+end
+
 function WSClient:send(content)
     assert(content ~= nil, "content can't nil")
     self._websocket.write(self._wsid, content, "binary", 0x02)

@@ -54,11 +54,14 @@ local function onStart()
     end
 
     -- 模拟客户端
-    -- for i = 0, 0 do
-    --     skynet.sleep(10)
-    --     local client_id = skynet.newservice("ws_client")
-    --     skynet.send(client_id, "lua", "start", "ws", string.format("%s:%d", "127.0.0.1", conf.gatePort))
-    -- end
+    for i = 1, 1 do
+        skynet.sleep(10)
+        local client_id = skynet.newservice("robot_server")
+        skynet.send(client_id, "lua", "start", "ws", string.format("%s:%d", "127.0.0.1", conf.gate.port), {
+            account=string.format("%s_%d", "levi", i),
+            password="123456"
+        })
+    end
     
     skynet.exit()
 end

@@ -18,9 +18,9 @@ local CMD = {
     servername = ".center_proxy",
     scheme = "ws",
     debug = false,
-    running = false,
     serverId = 0,
-    keepalive = 2,
+    tick_s = 5,
+    keepalive_s = 3,
     client = ws:new()
 }
 
@@ -29,20 +29,18 @@ function CMD.start(scheme, host, content)
     CMD.host = host
     CMD.debug = content.debug
 
-    CMD.client:handleMessage(CMD.on_message)
-    CMD.client:handleError(CMD.on_error)
+    CMD.client:handleMessage(CMD.message)
+    CMD.client:handleError(CMD.error)
     local ok, err = CMD.client:connect(scheme, host)
     if err then
         return 1, err
     end
 
-    CMD.running = true
-
     -- 心跳处理
-    timer.start(30, CMD.heatbeat)
+    timer.start(CMD.tick_s, CMD.tick)
 
     -- 网络断线检查
-    timer.start(CMD.keepalive, CMD.tick)
+    timer.start(CMD.keepalive_s, CMD.keepalive)
 
     -- 注册服务
     CMD.registerService()
@@ -55,14 +53,15 @@ function CMD.stop()
 end
 
 -- 心跳检查
-function CMD.heatbeat()
+function CMD.tick()
     if CMD.client:open() then
         CMD.send(0x0000, 0x0000, 0, nil, nil)
+        -- CMD.client:ping()
     end
 end
 
 -- 连接检查
-function CMD.tick()
+function CMD.keepalive()
     local open = CMD.client:open()
     if not open then
         skynet.error("reconnect to server")
@@ -131,7 +130,7 @@ function CMD.send(mid, sid, data, fn)
     return CMD.sendWithClientId(mid, sid, 0, data, fn)
 end
 
-function CMD.on_message(msg)
+function CMD.message(msg)
     local pk = packet:new()
     pk:unpack(msg)
 
@@ -154,7 +153,7 @@ function CMD.on_message(msg)
     end
 end
 
-function CMD.on_error(err)
+function CMD.error(err)
     skynet.error(err)
 end
 

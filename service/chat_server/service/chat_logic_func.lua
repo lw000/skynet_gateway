@@ -20,4 +20,6 @@ function logic.onChat(head, content)
     }
 end
 
+-- dump(logic, "logic")
+
 return logic
