@@ -20,15 +20,15 @@ local logic = {}
 
 -- 请求注册
 function logic.onReqRegist(head, content)
-    dump(head, "head")
-    dump(content, "reqRegist")
+    -- dump(head, "head")
+    -- dump(content, "reqRegist")
     return skynet_db_call(head.mid, head.sid, content)
 end
 
 -- 请求登录
 function logic.onReqLogin(head, content)
-    dump(head, "head")
-    dump(content, "reqLogin")
+    -- dump(head, "head")
+    -- dump(content, "reqLogin")
     return skynet_db_call(head.mid, head.sid, content)
 end
 
