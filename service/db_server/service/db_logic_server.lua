@@ -44,13 +44,13 @@ function CMD.stop()
 end
 
 -- DB服务·send消息处理接口
-function CMD.dispatch_call_message(head, content)
-    return mgr.dispatch(CMD.dbconn, head, content)
+function CMD.dispatch_call_message(mid, sid, service, content)
+    return mgr.dispatch(CMD.dbconn, mid, sid, service, content)
 end
 
 -- DB服务·call消息处理接口
-function CMD.dispatch_send_message(head, content)
-    mgr.dispatch(CMD.dbconn, head, content)
+function CMD.dispatch_send_message(mid, sid, service, content)
+    mgr.dispatch(CMD.dbconn, mid, sid, service, content)
 end
 
 local function dispatch()

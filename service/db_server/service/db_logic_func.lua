@@ -7,7 +7,7 @@ local logic = {
 }
 
 -- 请求注册
-function logic.onReqRegist(dbconn, head, content)
+function logic.onReqRegist(dbconn, mid, sid, service, content)
     -- dump(head, "head")
     -- dump(content, "reqRegist")
     local reply = {
@@ -21,7 +21,7 @@ end
 local userId_index = 10000
 
 -- 请求登录
-function logic.onReqLogin(dbconn, head, content)
+function logic.onReqLogin(dbconn, mid, sid, service, content)
     -- dump(head, "head")
     -- dump(content, "reqLogin")
     userId_index = userId_index + 1
@@ -37,7 +37,7 @@ function logic.onReqLogin(dbconn, head, content)
 end
 
 -- 记录请求日志
-function logic.onWriteLog(dbconn, head, content)
+function logic.onWriteLog(dbconn, mid, sid, service, content)
     assert(dbconn ~= nil)
     assert(content ~= nil)
     if dbconn == nil then

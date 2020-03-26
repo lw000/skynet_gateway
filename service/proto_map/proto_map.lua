@@ -41,30 +41,27 @@ function proto_map.exec(head, content, func)
     local cmd = query(head.mid, head.sid)
     if cmd == nil then
         local errmsg = "unknown proto_map [mid=" .. tostring(head.mid) .. " sid=" .. tostring(head.sid) .. "] command"
-        return nil, errmsg 
+        return 1, errmsg
     end
 
     if cmd.unpack == nil then
         local errmsg = "proto_map [PB]协议解包接口不存在"
-        return nil, errmsg 
+        return 2, errmsg 
+    end
+    
+    if cmd.pack == nil then
+        local errmsg = "proto_map [PB]协议封包接口不存在"
+        return 3, errmsg 
     end
 
     -- 1. [PB]协议·解包
     local reqContent = cmd.unpack(content.data)
-    -- dump(reqContent, "reqContent")
-
     -- 2. 业务处理
     local ackContent = func(head, reqContent)
     if ackContent == nil then
-        return
+        local errmsg = "接口无返回值"
+        return 4, ""
     end
-
-    if cmd.pack == nil then
-        return
-    end
-    
     -- 3. [PB]协议·封包
-    return cmd.pack(ackContent)
+    return 0, cmd.pack(ackContent)
 end
-
--- dump(proto_map, "proto_map")

@@ -55,27 +55,24 @@ function CMD.stop()
 end
 
 -- DB服务·send消息处理接口
-function CMD.dispatch_send_message(head, content)
-    assert(head ~= nil and type(head)== "table")
-    assert(content ~= nil and type(content)== "table")
-
-    local index = (head.center_agent % #db_logic_servers)+1
-
-    -- skynet.error("rand db_logic_server index:", index)
-
-    skyhelper.send(db_logic_servers[index], "dispatch_send_message", head, content)
+function CMD.dispatch_send_message(mid, sid, service, content)
+    local index = math.random(1,10)
+    if CMD.debug then
+        dump(content, CMD.servername .. ".content")
+        skynet.error("db_logic_server rand index:", index)
+    end
+    
+    skyhelper.send(db_logic_servers[index], "dispatch_send_message", mid, sid, service, content)
 end
 
 -- DB服务·call消息处理接口
-function CMD.dispatch_call_message(head, content)
-    assert(head ~= nil and type(head)== "table")
-    assert(content ~= nil and type(content)== "table")
-
-    local index = (head.center_agent % #db_logic_servers)+1
-
-    -- skynet.error("rand db_logic_server index:", index)
-
-    return skyhelper.call(db_logic_servers[index], "dispatch_call_message", head, content)
+function CMD.dispatch_call_message(mid, sid, service, content)
+    local index = math.random(1,10)
+    if CMD.debug then
+        dump(content, CMD.servername .. ".content")
+        skynet.error("db_logic_server rand index:", index)
+    end
+    return skyhelper.call(db_logic_servers[index], "dispatch_call_message", mid, sid, service, content)
 end
 
 local function dispatch()

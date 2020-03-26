@@ -27,25 +27,24 @@ function manager.stop()
     
 end
 
-function manager.dispatch(dbconn, head, content)
+function manager.dispatch(dbconn, mid, sid, service, content)
     assert(dbconn ~= nil)
-    assert(head ~= nil and type(head)== "table")
     assert(content ~= nil and type(content)== "table")
-    
+
     if manager.debug then
-        skynet.error(string.format(manager.servername .. " mid=%d sid=%d", head.mid, head.sid))
+        skynet.error(string.format(manager.servername .. " mid=%d sid=%d", mid, sid))
     end
 
     -- 查询业务处理函数
-    local method = methods[head.sid]
+    local method = methods[sid]
     assert(method ~= nil)
     if not method then
-        local errmsg = "unknown " .. manager.servername .. " [sid=" .. tostring(head.sid) .. "] command"
+        local errmsg = "unknown " .. manager.servername .. " [sid=" .. tostring(sid) .. "] command"
         skynet.error(errmsg)
         return nil, errmsg
     end
     
-    return method.func(dbconn, head, content)
+    return method.func(dbconn, mid, sid, service, content)
 end
 
 return manager

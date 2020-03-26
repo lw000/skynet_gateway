@@ -71,7 +71,7 @@ function handler.message(fd, msg)
     end
 
     if handler.debug then
-        skynet.error(handler.servername .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
+        -- skynet.error(handler.servername .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
     end
 
     -- 心跳消息处理
@@ -79,7 +79,7 @@ function handler.message(fd, msg)
         -- skynet.error("心跳", "mid=" .. ssmid, "sid=" .. sid, os.date("%Y-%m-%d %H:%M:%S", os.time()))
         return
     end
-
+    
     -- 包头
     local head = {
         mid = pk:mid(),

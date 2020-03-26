@@ -44,16 +44,13 @@ function manager.dispatch(head, content)
         return nil, errmsg
     end
 
-    local ack, err = proto_map.exec(head, content, method.func)
-    if err ~= nil then
-        skynet.error(err)
-        return nil, err 
+    local ret, ack = proto_map.exec(head, content, method.func)
+    if ret ~= 0 then
+        skynet.error(ret, ack)
+        return ack 
     end
     
-    -- 不需要转发
-    if ack == nil then
-        return
-    end
+    -- dump(head, manager.servername .. ".head")
 
     -- 转发消息
     skyhelper.send(head.center_agent, "send_client_message", head, ack)

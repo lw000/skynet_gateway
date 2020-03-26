@@ -53,6 +53,7 @@ function CMD.dispatch_send_message(head, content)
     if CMD.debug then
         dump(head, CMD.servername .. ".head")
     end
+
     local method = methods[head.sid]
     assert(method ~= nil)
     if method == nil then
@@ -61,10 +62,10 @@ function CMD.dispatch_send_message(head, content)
         return nil, errmsg
     end
 
-    local ack, err = proto_map.exec(head, content, method.func)
-    if err ~= nil then
-        skynet.error(err)
-        return nil, err 
+    local ret, ack = proto_map.exec(head, content, method.func)
+    if ret ~= 0 then
+        skynet.error(ret, ack)
+        return ack 
     end
 
     skyhelper.send(head.center_agent, "send_client_message", head, ack)

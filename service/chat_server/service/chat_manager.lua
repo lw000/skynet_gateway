@@ -33,27 +33,24 @@ function manager.dispatch(head, content)
     if manager.debug then
         skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
     end
-
+ 
     -- 查询业务处理函数
     local method = methods[head.sid]
     assert(method ~= nil)
-    if method == nil then
+    if not method then
         local errmsg = "unknown " .. manager.servername .. " [sid=" .. tostring(head.sid) .. "] command"
         skynet.error(errmsg)
         return nil, errmsg
     end
 
-    local ack, err = proto_map.exec(head, content, method.func)
-    if err ~= nil then
-        skynet.error(err)
-        return nil, err 
-    end
-
-    -- 不需要转发
-    if ack == nil then
-        return
+    local ret, ack = proto_map.exec(head, content, method.func)
+    if ret ~= 0 then
+        skynet.error(ret, ack)
+        return ack 
     end
     
+    -- dump(head, manager.servername .. ".head")
+
     -- 转发消息
     skyhelper.send(head.center_agent, "send_client_message", head, ack)
 end
