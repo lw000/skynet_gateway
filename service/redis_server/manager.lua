@@ -24,7 +24,9 @@ end
 
 function manager.dispatch(redisConn, head, content)
     assert(redisConn ~= nil)
-
+	assert(head ~= nil and type(head) == "table")
+    assert(content ~= nil and type(content) == "table")
+    
     -- skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
 
     -- 查询业务处理函数

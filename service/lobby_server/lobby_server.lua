@@ -27,10 +27,13 @@ function CMD.stop()
     return 0
 end
 
--- 登录服·消息处理接口
-function CMD.on_server_message(head, content)
-    assert(head ~= nil and type(head)== "table")
-    assert(content ~= nil and type(content)== "table")
+-- 登录服·send消息处理接口
+function CMD.dispatch_send_message(head, content)
+	mgr.dispatch(head, content)
+end
+
+-- 登录服·call消息处理接口
+function CMD.dispatch_call_message(head, content)
 	return mgr.dispatch(head, content)
 end
 

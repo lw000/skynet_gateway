@@ -29,7 +29,9 @@ end
 
 function manager.dispatch(dbconn, head, content)
     assert(dbconn ~= nil)
-
+    assert(head ~= nil and type(head)== "table")
+    assert(content ~= nil and type(content)== "table")
+    
     if manager.debug then
         skynet.error(string.format(manager.servername .. " mid=%d sid=%d", head.mid, head.sid))
     end

@@ -94,6 +94,7 @@ function CMD.registerService()
         local data = functor.unpack_AckRegService(content)
         -- dump(data, "AckRegistService")
         if data.result == 0 then
+            CMD.serverId = data.serverId
             skynet.error("center_proxy registered serverId=" .. data.serverId)
         end
     end)

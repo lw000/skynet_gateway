@@ -12,7 +12,7 @@ function logic.onReqRegist(head, content)
     -- dump(head, "head")
     -- dump(content, "reqRegist")
 
-    local ok, reply = pcall(skyhelper.call, SERVICE_TYPE.DB.NAME, "on_server_message", head, content)
+    local ok, reply = pcall(skyhelper.call, SERVICE_TYPE.DB.NAME, "dispatch_call_message", head, content)
     if not reply then
         return nil
     end
@@ -24,7 +24,7 @@ function logic.onReqLogin(head, content)
     -- dump(head, "head")
     -- dump(content, "reqLogin")
 
-    local ok, reply = pcall(skyhelper.call, SERVICE_TYPE.DB.NAME, "on_server_message", head, content)
+    local ok, reply = pcall(skyhelper.call, SERVICE_TYPE.DB.NAME, "dispatch_call_message", head, content)
     if not reply then
         return nil
     end

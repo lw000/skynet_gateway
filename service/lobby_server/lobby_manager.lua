@@ -28,6 +28,9 @@ function manager.stop()
 end
 
 function manager.dispatch(head, content)
+    assert(head ~= nil and type(head)== "table")
+    assert(content ~= nil and type(content)== "table")
+    
     if manager.debug then
         skynet.error(string.format(manager.servername .. ":> mid=%d sid=%d", head.mid, head.sid))
     end
@@ -53,7 +56,7 @@ function manager.dispatch(head, content)
     end
 
     -- 转发消息
-    skyhelper.send(SERVICE_TYPE.CENTER.NAME, "service_message", head, ack)
+    skyhelper.send(head.center_agent, "send_client_message", head, ack)
 end
 
 return manager

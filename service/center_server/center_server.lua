@@ -49,11 +49,10 @@ function CMD.listen()
     end)
 end
 
-function CMD.on_server_message(head, content)
+function CMD.dispatch_send_message(head, content)
     if CMD.debug then
         dump(head, CMD.servername .. ".head")
     end
-
     local method = methods[head.sid]
     assert(method ~= nil)
     if method == nil then

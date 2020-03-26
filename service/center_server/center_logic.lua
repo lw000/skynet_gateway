@@ -12,10 +12,10 @@ local logic = {}
 
 -- 服务注册
 function logic.onRegist(head, content)
-    dump(head, "head")
-    dump(content, "ReqRegService")
+    -- dump(head, "head")
+    -- dump(content, "ReqRegService")
 
-    dump(service_register, "service_register")
+    -- dump(service_register, "service_register")
 
     local servers = service_register[content.svrType]
     if servers == nil then

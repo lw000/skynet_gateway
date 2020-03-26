@@ -107,7 +107,7 @@ function handler.message(fd, msg)
         return nil, errmsg 
     end
 
-    skyhelper.send(service.name, "on_server_message", head, content)
+    skyhelper.send(service.name, "dispatch_send_message", head, content)
 end
 
 function handler.ping(fd)

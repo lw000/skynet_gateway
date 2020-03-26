@@ -53,9 +53,9 @@ function manager.dispatch(head, content)
     if ack == nil then
         return
     end
-
+    
     -- 转发消息
-    skyhelper.send(SERVICE_TYPE.CENTER.NAME, "service_message", head, ack)
+    skyhelper.send(head.center_agent, "send_client_message", head, ack)
 end
 
 return manager
