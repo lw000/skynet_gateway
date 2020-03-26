@@ -16,7 +16,8 @@ LOBBY_CMD = {
 CENTER_CMD = {
     MDM = 0x0003,    -- 中心F服·主命令
     SUB = {
-        REGIST = 0x0001     -- 注册服务
+        REGIST = 0x0001,     -- 注册服务
+        UNREGIST = 0x0002,   -- 卸载服务
     }
 }
 

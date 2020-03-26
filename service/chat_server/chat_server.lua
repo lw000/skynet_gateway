@@ -6,8 +6,14 @@ require("skynet.manager")
 require("common.export")
 require("service_config.type")
 
-
 local chat_logic_servers = {}  -- 服务ID
+
+local function dispatch_call_message(head, content)
+    local index = (head.serviceId % #chat_logic_servers)+1
+    -- skynet.error("chat_logic_servers index:", index)
+    local chat_logic_server = chat_logic_servers[index]
+    skyhelper.call(chat_logic_server, "on_server_message", head, content)
+end
 
 local CMD = {
     servicetype = SERVICE_TYPE.CHAT.ID, 	-- 服务类型
@@ -39,17 +45,7 @@ end
 
 -- 登录服·消息处理接口
 function CMD.on_server_message(head, content)
-    assert(head ~= nil and type(head)== "table")
-    assert(content ~= nil and type(content)== "table")
-
-    -- dump(head, "head")
-
-    local index = (head.serviceId % #chat_logic_servers)+1
-
-    skynet.error("chat_logic_servers index:", index)
-
-    local chat_logic_server = chat_logic_servers[index]
-    return skyhelper.call(chat_logic_server, "on_server_message", head, content)
+    return dispatch_call_message(head, content)
 end
 
 local function dispatch()

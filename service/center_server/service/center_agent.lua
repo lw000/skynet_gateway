@@ -2,7 +2,7 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local websocket = require("http.websocket")
 local packet = require("network.packet")
-local mgr = require("center_server.service.center_manager")
+local route = require("center_server.service.center_route")
 local skyhelper = require("skycommon.helper")
 local logger = require("sharelib.logger")
 require("skynet.manager")
@@ -25,16 +25,13 @@ function handler.accept(fd, protocol, addr, content)
         skynet.error(err)
         return 1, "websocket.accept fail"
     end
-
-    mgr.start(handler.servername, handler.debug)
 end
 
-function handler.service_message(head, content)
+function handler.send_client_message(head, data)
     if handler.debug then
         dump(head, handler.servername .. ".head")
-        dump(content, handler.servername .. ".content")
     end
-    handler.send(handler.fd, head, content)
+    handler.send(handler.fd, head, data)
 end
 
 function handler.connect(fd)
@@ -87,8 +84,10 @@ function handler.message(fd, msg)
     local head = {
         mid = pk:mid(),
         sid = pk:sid(),
+        ver = ver,
+        checkCode = checkCode,
         clientId = clientId,
-        serviceId = skynet.self(),
+        center_agent = skynet.self(),
     }
 
     -- 内容
@@ -97,12 +96,18 @@ function handler.message(fd, msg)
     }
 
     if handler.debug then
-        -- dump(head, handler.servername .. ".head")
-        -- dump(content, handler.servername .. ".content")
+        dump(head, handler.servername .. ".head")
     end
 
-    -- 消息分发
-    mgr.dispatch(head, content)
+    -- 转发到对应服务器
+    local service = route[head.mid]
+    if service == nil then
+        local errmsg = "unknown " .. handler.servername .. " mid=" .. tostring(head.mid) .. " command" 
+        skynet.error(errmsg)
+        return nil, errmsg 
+    end
+
+    skyhelper.send(service.name, "on_server_message", head, content)
 end
 
 function handler.ping(fd)
@@ -123,9 +128,9 @@ function handler.error(fd)
     skynet.exit()
 end
 
-function handler.send(fd, head, content)
+function handler.send(fd, head, data)
     local pk = packet:new()
-    pk:pack(head.mid, head.sid, head.clientId, content)
+    pk:pack(head.mid, head.sid, head.clientId, data)
     local ok = pcall(websocket.write, fd, pk:data(), "binary", 0x02)
     if not ok then
         skynet.error("websocket.write error")

@@ -2,8 +2,8 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
 local ws = require("network.wsext")
-local timer = require("network.timer")
-local hub = require("network.hub")
+local timer = require("sharelib.timer")
+local hub = require("sharelib.hub")
 local packet = require("network.packet")
 local skyhelper = require("skycommon.helper")
 require("skynet.manager")
@@ -37,10 +37,10 @@ function CMD.start(scheme, host, content)
     end
 
     -- 心跳处理
-    timer.start(CMD.tick_s, CMD.tick)
+    timer.runEvery(CMD.tick_s, CMD.tick)
 
     -- 网络断线检查
-    timer.start(CMD.keepalive_s, CMD.keepalive)
+    timer.runEvery(CMD.keepalive_s, CMD.keepalive)
 
     -- 注册服务
     CMD.registerService()
@@ -92,9 +92,9 @@ function CMD.registerService()
     )
     CMD.send(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, content, function(content)
         local data = functor.unpack_AckRegService(content)
-        dump(data, "AckRegistService")
+        -- dump(data, "AckRegistService")
         if data.result == 0 then
-            -- skynet.error("code=" .. data.result, "serverId=" .. data.serverId, "errmsg=" .. data.errmsg)
+            skynet.error("center_proxy registered serverId=" .. data.serverId)
         end
     end)
 end
@@ -147,10 +147,15 @@ function CMD.message(msg)
     local content = {
         data = msg
     }
-    local ok, ret = pcall(skyhelper.send, clientId, "send_client_message", content)
-    if not ok then
-        skynet.error(ret)
+
+    local ok, agent = pcall(skyhelper.call, gate, "query_agent", clientId)
+    if ok and agent ~= nil then
+        local ok, ret = pcall(skyhelper.send, agent, "send_client_message", content)
+        if not ok then
+            skynet.error(ret)
+        end
     end
+
 end
 
 function CMD.error(err)

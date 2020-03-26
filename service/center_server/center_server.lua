@@ -2,9 +2,17 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
+local logic = require("center_server.center_logic")
 local skyhelper = require("skycommon.helper")
 require("skynet.manager")
 require("service_config.type")
+require("proto_map.proto_map")
+
+-- 业务处理接口映射表
+local methods = {
+    [CENTER_CMD.SUB.REGIST] = {func=logic.onRegist, desc="服务注册"},
+    [CENTER_CMD.SUB.UNREGIST] = {func=logic.onUnregist, desc="服务卸载"}
+}
 
 local CMD = {
     servertype = SERVICE_TYPE.CENTER.ID,
@@ -41,12 +49,34 @@ function CMD.listen()
     end)
 end
 
-function CMD.service_message(head, content)
-    assert(head ~= nil and type(head)== "table")
+function CMD.on_server_message(head, content)
     if CMD.debug then
         dump(head, CMD.servername .. ".head")
     end
-    skyhelper.send(head.serviceId, "service_message", head, content)
+
+    local method = methods[head.sid]
+    assert(method ~= nil)
+    if method == nil then
+        local errmsg = "unknown " .. CMD.servername .. " [sid=" .. tostring(head.sid) .. "] command"
+        skynet.error(errmsg)
+        return nil, errmsg
+    end
+
+    local ack, err = proto_map.exec(head, content, method.func)
+    if err ~= nil then
+        skynet.error(err)
+        return nil, err 
+    end
+
+    skyhelper.send(head.center_agent, "send_client_message", head, ack)
+end
+
+function CMD.register_service(head, content)
+
+end
+
+function CMD.unregister_service(head, content)
+
 end
 
 local function dispatch()

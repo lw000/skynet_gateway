@@ -2,8 +2,8 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
 local ws = require("network.wsext")
-local timer = require("network.timer")
-local hub = require("network.hub")
+local timer = require("sharelib.timer")
+local hub = require("sharelib.hub")
 local packet = require("network.packet")
 require("skynet.manager")
 require("common.export")
@@ -32,10 +32,10 @@ function CMD.start(scheme, host, content)
     end
 
     -- 心跳
-    timer.start(CMD.tick_s, CMD.tick)
+    timer.runEvery(CMD.tick_s, CMD.tick)
 
     -- 连接检查
-    timer.start(CMD.keepalive_s, CMD.keepalive)
+    timer.runEvery(CMD.keepalive_s, CMD.keepalive)
 
     -- 注册账号，登录账号
     skynet.fork(CMD.regist)
@@ -100,25 +100,22 @@ function CMD.logon()
         -- dump(data, "AckLogin")
         
         -- 测试发送消息
-        skynet.fork(CMD.test, data.userInfo.userId)
+        skynet.fork(CMD.chat, data.userInfo.userId)
     end)
 end
 
-function CMD.test(userId)
-    while (CMD.running) do
-        if CMD.client:open() then
-            local chatMessage = functor.pack_ChatMessage(
-            {
-                from = userId,
-                to = 11,
-                content = "hello"
-            })
-            CMD.send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(msg)
-                local data = functor.unpack_AckChatMessage(msg)
-                -- dump(data, "AckChatMessage")
-            end)
-        end
-
+function CMD.chat(userId)
+    while CMD.client:open() do
+        local chatMessage = functor.pack_ChatMessage(
+        {
+            from = userId,
+            to = 11,
+            content = "hello" .. userId
+        })
+        CMD.send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(msg)
+            local data = functor.unpack_AckChatMessage(msg)
+            -- dump(data, "AckChatMessage")
+        end)
         skynet.sleep(100)
     end
 end

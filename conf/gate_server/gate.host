@@ -1,0 +1,16 @@
+config = [[
+    --网关服务器类型
+    svrtype = 1
+    --网关服务器编号
+    svrid = 1
+    -- 调试环境
+    debug = false
+    -- 网关调试端口
+    debugPort = 8001
+    -- 网关服务端口
+    port = 9948
+    -- 中心服地址
+    centerIP= "127.0.0.1"
+    -- 中心服端口
+    centerPort = 9900
+]]

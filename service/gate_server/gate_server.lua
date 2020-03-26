@@ -2,6 +2,7 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
+local skyhelper = require("skycommon.helper")
 require("skynet.manager")
 require("service_config.type")
 
@@ -15,7 +16,7 @@ local CMD = {
     centerPort = 8081,
     centerIP = "127.0.0.1",
     protocol = "ws",
-    -- agents = {},
+    agents = {},
 }
 
 function CMD.start(content)
@@ -52,10 +53,10 @@ function CMD.listen()
     
     socket.start(fd, function(id, addr)
         local agent = skynet.newservice("gate_agent", skynet.self())
-        -- CMD.agents[agent] = agent
+        CMD.agents[agent] = agent
         local index = (agent % #center_proxy_servers)+1
         
-        skynet.error("chat_logic_servers index:", index)
+        -- skynet.error("center_proxy_server index:", index)
 
         local center_proxy_server_id = center_proxy_servers[index]
         skynet.send(agent, "lua", "accept", id, CMD.protocol, addr, {
@@ -63,6 +64,19 @@ function CMD.listen()
             center_proxy_server_id = center_proxy_server_id,
         })
     end)
+end
+
+function CMD.query_agent(agent)
+    local clientAgent = CMD.agents[agent]
+    return clientAgent
+end
+
+function CMD.register_agent(agent)
+    CMD.agents[agent] = agent
+end
+
+function CMD.kick_agent(agent)
+    CMD.agents[agent] = nil
 end
 
 local function dispatch()
