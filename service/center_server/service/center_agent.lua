@@ -4,6 +4,7 @@ local websocket = require("http.websocket")
 local packet = require("network.packet")
 local mgr = require("center_server.service.center_manager")
 local skyhelper = require("skycommon.helper")
+local logger = require("sharelib.logger")
 require("skynet.manager")
 require("service_config.type")
 require("proto_map.proto_map")
@@ -43,13 +44,13 @@ end
 
 function handler.handshake(fd, header, url)
     local addr = websocket.addrinfo(fd)
-    -- skynet.error("ws handshake from", "addr=" .. addr, "url=" .. url)
+    logger.debug("ws handshake from add=%s url=%s", addr, url)
     
-    -- skynet.error("----header-----")
-    -- for k, v in pairs(header) do
-    --     skynet.error(k, v)
-    -- end
-    -- skynet.error("--------------")
+    logger.debug("----header-----")
+    for k, v in pairs(header) do
+        skynet.error(k, v)
+    end
+    logger.debug("-----end-----")
 end
 
 function handler.message(fd, msg)
