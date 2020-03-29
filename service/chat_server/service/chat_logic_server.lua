@@ -33,8 +33,8 @@ function CMD.stop()
 end
 
 -- DB服务·消息处理接口
-function CMD.on_server_message(head, content)
-    return mgr.dispatch(head, content)
+function CMD.dispatch_send_message(head, content)
+    mgr.dispatch(head, content)
 end
 
 local function dispatch()
