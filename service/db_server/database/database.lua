@@ -1,7 +1,7 @@
 local skynet = require("skynet")
 local mysql = require("skynet.db.mysql")
 
--- local conf = {
+-- conf = {
 --     host = "",      -- 主机地址
 --     port = 3306,    -- 端口
 --     database = "",  -- 数据库名

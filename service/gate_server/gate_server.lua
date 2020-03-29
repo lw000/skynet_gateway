@@ -13,20 +13,17 @@ local CMD = {
     servername = SERVICE_TYPE.GATE.NAME,
     debug = false,
     port = 8080,
-    centerPort = 8081,
-    centerIP = "127.0.0.1",
-    protocol = "ws",
     agents = {},
 }
 
 function CMD.start(content)
+    assert(content ~= nil)
     CMD.debug = content.debug
-    CMD.port = content.port
-    CMD.centerPort = content.centerPort
-    CMD.centerIP = content.centerIP,
-    assert(CMD.port > 0)
 
-    local host = string.format("%s:%d", CMD.centerIP, CMD.centerPort)
+    assert(content.port > 0)
+    CMD.port = content.port
+
+    local host = string.format("%s:%d", content.centerIP, content.centerPort)
     for i=1, 10 do
         local center_proxy = skynet.newservice("proxy/center_proxy", skynet.self())
         skynet.call(center_proxy, "lua", "start", "ws", host, {
@@ -42,7 +39,7 @@ function CMD.start(content)
 end
 
 function CMD.stop()
-    socket.close(CMD.fd)
+
 end
 
 function CMD.listen()
@@ -50,16 +47,13 @@ function CMD.listen()
     assert(fd ~= -1, "listen fail")
 
     skynet.error(string.format("listen port:" .. CMD.port))
-    
+    local protocol = "ws"
     socket.start(fd, function(id, addr)
         local agent = skynet.newservice("gate_agent", skynet.self())
         CMD.agents[agent] = agent
-        local index = (agent % #center_proxy_servers)+1
-        
-        -- skynet.error("center_proxy_server index:", index)
-
+        local index = (agent % #center_proxy_servers)+1 
         local center_proxy_server_id = center_proxy_servers[index]
-        skynet.send(agent, "lua", "accept", id, CMD.protocol, addr, {
+        skynet.send(agent, "lua", "accept", id, protocol, addr, {
             debug = CMD.debug,
             center_proxy_server_id = center_proxy_server_id,
         })
@@ -67,8 +61,7 @@ function CMD.listen()
 end
 
 function CMD.query_agent(agent)
-    local clientAgent = CMD.agents[agent]
-    return clientAgent
+    return CMD.agents[agent]
 end
 
 function CMD.register_agent(agent)

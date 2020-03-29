@@ -3,17 +3,17 @@ local cjson = require("cjson")
 local skyhelper = require("skycommon.helper")
 require("common.export")
 
-local function skynet_db_call(mid, sid, content)
-    local ok, reply = pcall(skyhelper.call, SERVICE_TYPE.DB.NAME, "dispatch_call_message", mid, sid, SERVICE_TYPE.LOBBY.NAME, content)
-    if ok and reply ~= nil then
+local function skynet_db_call(command, ...)
+    local ok, data = pcall(skyhelper.call, SERVICE_TYPE.DB.NAME, "dispatch_call_message", command, SERVICE_TYPE.LOBBY.NAME, ...)
+    if ok and data ~= nil then
         -- dump(ok, "ok")
-        -- dump(reply, "reply")
-        return reply
+        -- dump(data, "data")
+        return data
     end
 end
 
-local function skynet_db_send(mid, sid, content)
-    pcall(skyhelper.send, SERVICE_TYPE.DB.NAME, "dispatch_send_message", mid, sid, SERVICE_TYPE.LOBBY.NAME, content)
+local function skynet_db_send(command, ...)
+    pcall(skyhelper.send, SERVICE_TYPE.DB.NAME, "dispatch_send_message", command, SERVICE_TYPE.LOBBY.NAME, ...)
 end
 
 local logic = {}
@@ -22,14 +22,14 @@ local logic = {}
 function logic.onReqRegist(head, content)
     -- dump(head, "head")
     -- dump(content, "reqRegist")
-    return skynet_db_call(head.mid, head.sid, content)
+    return skynet_db_call("register_account", content)
 end
 
 -- 请求登录
 function logic.onReqLogin(head, content)
     -- dump(head, "head")
     -- dump(content, "reqLogin")
-    return skynet_db_call(head.mid, head.sid, content)
+    return skynet_db_call("login_account", content)
 end
 
 return logic

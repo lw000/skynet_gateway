@@ -55,8 +55,7 @@ end
 -- 心跳检查
 function CMD.tick()
     if CMD.client:open() then
-        CMD.send(0x0000, 0x0000, 0, nil, nil)
-        -- CMD.client:ping()
+        CMD.send(0x0000, 0x0000, nil, nil)
     end
 end
 
@@ -64,7 +63,7 @@ end
 function CMD.keepalive()
     local open = CMD.client:open()
     if not open then
-        skynet.error("reconnect to server")
+        skynet.error("reconnect to center server")
         local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
         if err ~= nil then
             skynet.error(ok, err)  
@@ -156,7 +155,6 @@ function CMD.message(msg)
             skynet.error(ret)
         end
     end
-
 end
 
 function CMD.error(err)

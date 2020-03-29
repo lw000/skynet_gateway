@@ -9,35 +9,20 @@ require("proto_map.proto_map")
 
 local gate = ...
 
-local handler = {
-    servername = ".gate_agent",
-    debug = false,
-    fd = -1,
-    center_proxy_server_id = -1
+local center_proxy_server_id = -1
+
+local SOCKET = {
+    fd = -1
 }
 
-function handler.accept(fd, protocol, addr, content)
-    -- dump(content, "content")
-    handler.debug = content.debug
-    handler.center_proxy_server_id = content.center_proxy_server_id
-
-    local ok, err = websocket.accept(fd, handler, protocol, addr)
-    if err then
-        skynet.error(err)
-        return 1, "websocket.accept fail"
-    end
-    
-    return 0
-end
-
-function handler.connect(fd)
-    handler.fd = fd
+function SOCKET.connect(fd)
+    SOCKET.fd = fd
     -- skynet.error("ws connect from: " .. tostring(fd))
 end
 
-function handler.handshake(fd, header, url)
+function SOCKET.handshake(fd, header, url)
     local addr = websocket.addrinfo(fd)
-    -- skynet.error("ws handshake from", "addr=" .. addr, "url=" .. url)
+    skynet.error("ws handshake from", "addr=" .. addr, "url=" .. url)
     
     -- skynet.error("----header-----")
     -- for k, v in pairs(header) do
@@ -46,7 +31,7 @@ function handler.handshake(fd, header, url)
     -- skynet.error("--------------")
 end
 
-function handler.message(fd, msg)
+function SOCKET.message(fd, msg)
     local pk = packet:new()
     pk:unpack(msg)
 
@@ -66,10 +51,6 @@ function handler.message(fd, msg)
         -- body
     end
 
-    if handler.debug then
-        skynet.error(handler.servername .. " message", "mid=" .. mid, "sid=" .. sid, "checkCode=" .. checkCode, "clientId=" .. clientId, "len=" .. string.len(pk:data()))
-    end
-
     -- 心跳消息处理
     if mid == 0 and sid == 0 then
         --处理客户端心跳，超时的关闭
@@ -84,44 +65,58 @@ function handler.message(fd, msg)
         clientId = skynet.self(),
         data = pk:data()
     }
-
-    if handler.debug then
-        dump(content, handler.servername .. ".content")
-    end
-
-    skyhelper.send(handler.center_proxy_server_id, "send_center_message", content)
+    skyhelper.send(center_proxy_server_id, "send_center_message", content)
 end
 
-function handler.ping(fd)
+function SOCKET.ping(fd)
     -- skynet.error("ws ping from: " .. tostring(fd) .. "\n")
 end
 
-function handler.pong(fd)
+function SOCKET.pong(fd)
     -- skynet.error("ws pong from: " .. tostring(fd))
 end
 
-function handler.close(fd, code, reason)
+function SOCKET.close(fd, code, reason)
     -- skynet.error("ws close from: " .. tostring(fd), code, reason)
     skynet.exit()
 end
 
-function handler.error(fd)
+function SOCKET.error(fd)
     -- skynet.error("ws error from: " .. tostring(fd))
     skynet.exit()
+end
+
+function SOCKET.send(data)
+    local ok = pcall(websocket.write, SOCKET.fd, data, "binary", 0x02)
+    if not ok then
+        skynet.error("websocket.write error")
+    end
+end
+
+local handler = {
+    servername = ".gate_agent",
+    debug = false,
+}
+
+function handler.accept(fd, protocol, addr, content)
+    -- dump(content, "content")
+    handler.debug = content.debug
+    center_proxy_server_id = content.center_proxy_server_id
+
+    local ok, err = websocket.accept(fd, SOCKET, protocol, addr)
+    if err then
+        skynet.error(err)
+        return 1, "websocket.accept fail"
+    end
+    
+    return 0
 end
 
 function handler.send_client_message(content)
     if handler.debug then
         dump(content, handler.servername .. ".content")
     end
-    handler.send(handler.fd, content.data)
-end
-
-function handler.send(fd, data)
-    local ok = pcall(websocket.write, fd, data, "binary", 0x02)
-    if not ok then
-        skynet.error("websocket.write error")
-    end
+    SOCKET.send(content.data)
 end
 
 skynet.init(

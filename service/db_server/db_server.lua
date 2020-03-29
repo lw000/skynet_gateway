@@ -20,21 +20,13 @@ local CMD = {
 }
 
 -- 服务启动·接口
---[[
-    返回值：code, err
-    code=0成功，非零失败
-    err 错误消息
-]]
 function CMD.start(conf)
-    assert(conf ~= nil)
-    
+    assert(conf ~= nil) 
+
     CMD.debug = conf.debug
     if CMD.debug then
         dump(conf, "conf")
     end
-
-    -- 设置随机种子
-    math.randomseed(os.time())
 
     for i=1, 10 do
         local db_logic_server = skynet.newservice("service/db_logic_server")
@@ -55,24 +47,15 @@ function CMD.stop()
 end
 
 -- DB服务·send消息处理接口
-function CMD.dispatch_send_message(mid, sid, service, content)
+function CMD.dispatch_send_message(command, service, ...)
     local index = math.random(1,10)
-    if CMD.debug then
-        dump(content, CMD.servername .. ".content")
-        skynet.error("db_logic_server rand index:", index)
-    end
-    
-    skyhelper.send(db_logic_servers[index], "dispatch_send_message", mid, sid, service, content)
+    skyhelper.send(db_logic_servers[index], "dispatch_send_message", command, service, ...)
 end
 
 -- DB服务·call消息处理接口
-function CMD.dispatch_call_message(mid, sid, service, content)
+function CMD.dispatch_call_message(command, ...)
     local index = math.random(1,10)
-    if CMD.debug then
-        dump(content, CMD.servername .. ".content")
-        skynet.error("db_logic_server rand index:", index)
-    end
-    return skyhelper.call(db_logic_servers[index], "dispatch_call_message", mid, sid, service, content)
+    return skyhelper.call(db_logic_servers[index], "dispatch_call_message", command, ...)
 end
 
 local function dispatch()

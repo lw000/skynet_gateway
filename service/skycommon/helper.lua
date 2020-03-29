@@ -5,8 +5,6 @@ local skyhelper = {}
 
 -- 参数检查
 local function check(servername, method)
-    -- dump(servername)
-    -- dump(method)
     assert(servername ~= nil)
     assert(method ~= nil and type(method) == "string" and method ~= "")
     return servername, method

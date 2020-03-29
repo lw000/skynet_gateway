@@ -3,7 +3,7 @@ local skynet = require("skynet")
 local service = require("skynet.service")
 local skyhelper = require("skycommon.helper")
 local database = require("db_server.database.database")
-local mgr = require("db_server.service.db_logic_manager")
+local logic = require("db_server.service.db_logic_func")
 require("skynet.manager")
 require("skynet.manager")
 require("common.export")
@@ -29,28 +29,36 @@ function CMD.start(content)
         return 1, CMD.servername .. " db connect fail"
     end
 
-    mgr.start(CMD.servername, CMD.debug)
-
     return 0
 end
 
 -- 服务停止·接口
 function CMD.stop()
-    mgr.stop()
-
     database.close(CMD.dbconn)
     CMD.dbconn = nil
     return 0
 end
 
+local function dispatch_message(command, service, ...) 
+    -- 查询业务处理函数
+    local f = logic[command]
+    assert(f ~= nil)
+    if not f then
+        local errmsg = string.format( "unknown %s command=%s", CMD.servername, command )
+        skynet.error(errmsg)
+        return
+    end
+    return f(CMD.dbconn, service, ...)
+end
+
 -- DB服务·send消息处理接口
-function CMD.dispatch_call_message(mid, sid, service, content)
-    return mgr.dispatch(CMD.dbconn, mid, sid, service, content)
+function CMD.dispatch_call_message(command, service, ...)
+    return dispatch_message(command, service, ...)
 end
 
 -- DB服务·call消息处理接口
-function CMD.dispatch_send_message(mid, sid, service, content)
-    mgr.dispatch(CMD.dbconn, mid, sid, service, content)
+function CMD.dispatch_send_message(command, ...)
+    dispatch_message(command, nil, ...)
 end
 
 local function dispatch()
