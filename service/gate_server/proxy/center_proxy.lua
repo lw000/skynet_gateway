@@ -63,10 +63,10 @@ end
 function CMD.keepalive()
     local open = CMD.client:open()
     if not open then
-        skynet.error("reconnect to center server")
+        skynet.error("attempting reconnect in " .. tonumber(CMD.keepalive_s) .." seconds")
         local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
         if err ~= nil then
-            skynet.error(ok, err)  
+            skynet.error(ok, err)
         end
         open = CMD.client:open()
         if open then
