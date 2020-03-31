@@ -1,6 +1,5 @@
 package.path = ";./service/?.lua;" .. package.path
 local skynet = require("skynet")
--- local conf = require("config.config")
 require("common.export")
 
 local function loadstring(chunk, chunkname)
@@ -10,10 +9,9 @@ local function loadstring(chunk, chunkname)
 end
 
 local function onStart()
-
     local config = loadstring(skynet.getenv("config"), "@gate.config")
     assert(config ~= nil)
-    dump(config, "config")
+    -- dump(config, "config")
 
     skynet.newservice("debug_console", config.debugPort)
 

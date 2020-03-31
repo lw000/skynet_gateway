@@ -2,11 +2,13 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
+local cluster = require("skynet.cluster")
 local skyhelper = require("skycommon.helper")
 require("skynet.manager")
 require("service_config.type")
 
 local center_proxy_servers = {}  -- 后端代理服务ID
+local master_proxy
 
 local CMD = {
     servertype = SERVICE_TYPE.GATE.ID,
@@ -23,6 +25,9 @@ function CMD.start(content)
     assert(content.port > 0)
     CMD.port = content.port
 
+    local master = skynet.newservice("proxy/master_proxy")
+    skynet.call(master, "lua", "open", 1)
+        
     local host = string.format("%s:%d", content.centerIP, content.centerPort)
     for i=1, 10 do
         local center_proxy = skynet.newservice("proxy/center_proxy", skynet.self())
@@ -32,6 +37,18 @@ function CMD.start(content)
         center_proxy_servers[i] = center_proxy
     end
     -- dump(center_proxy_servers, "center_proxy_servers")
+
+    -- master_proxy = cluster.proxy("db", "@master_service")
+
+    -- -- cluster.reload {
+    -- --     db = "127.0.0.1:2528",
+    -- --     db2 = "127.0.0.1:2529"
+    -- -- }
+
+    -- skynet.fork(function ( ... )
+    --     skynet.error(pcall(skynet.call, master_proxy, "GET", "a"))
+    --     skynet.error(cluster.call("db", "@master_service", "GET", "b"))
+    -- end)
 
     CMD.listen()
     

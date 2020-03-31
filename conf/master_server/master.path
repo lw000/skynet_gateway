@@ -1,0 +1,17 @@
+-- 项目根目录
+root = "./"
+ 
+-- 使用C语言编写的Skynet核心库
+lua_cpath = root.."lib/luaclib/?.so"
+ 
+-- 使用Lua语言编写的Skynet核心库
+lua_path = root.."lib/lualib/?.lua;"..root.."lib/lualib/?/init.lua"
+ 
+-- 使用C语言编写的Skynet核心服务
+cpath = root.."lib/cservice/?.so"
+ 
+-- 使用Lua语言编写的Skynet核心服务与自定义的服务
+luaservice = root.."lib/service/?.lua;"..root.."service/?.lua;"
+    ..root.."service/master_server/?.lua;"
+ 
+lualoader = root.."lib/lualib/loader.lua"

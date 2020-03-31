@@ -2,6 +2,7 @@ package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
+local cluster = require("skynet.cluster")
 local logic = require("center_server.center_logic")
 local skyhelper = require("skycommon.helper")
 require("skynet.manager")
