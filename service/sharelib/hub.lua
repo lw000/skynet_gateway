@@ -1,5 +1,5 @@
 local skynet = require("skynet")
-require("utils")
+local utils = require("utils")
 
 -- local events = {
 --     [1]={
@@ -12,7 +12,7 @@ require("utils")
 --         [1] = {fn=function() end}
 --     },
 -- }
--- dump(events, "events")
+-- utils.dump(events, "events")
 
 local Hub = {
     events = {}

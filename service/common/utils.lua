@@ -1,5 +1,7 @@
 require("function")
 
+local utils = {}
+
 local function dump_value_(v)
     if type(v) == "string" then
         v = '"' .. v .. '"'
@@ -7,7 +9,7 @@ local function dump_value_(v)
     return tostring(v)
 end
 
-function dump(value, description, nesting)
+function utils.dump(value, description, nesting)
     if type(nesting) ~= "number" then
         nesting = 3
     end
@@ -74,7 +76,7 @@ function dump(value, description, nesting)
 end
     
 -- 表深度复制
-function deepCopy(object)
+function utils.deepCopy(object)
     local lookup_table = {}
     local function _copy(object)
         if type(object) ~= "table" then
@@ -91,3 +93,5 @@ function deepCopy(object)
     end
     return _copy(object)
 end
+
+return utils

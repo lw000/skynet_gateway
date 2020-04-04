@@ -1,4 +1,4 @@
-require("utils")
+local utils = require("utils")
 local Packet = class("Packet")
 
 function Packet:ctor()

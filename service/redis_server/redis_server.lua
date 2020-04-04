@@ -2,8 +2,8 @@ local skynet = require("skynet")
 local service = require("skynet.service")
 local redis = require("skynet.db.redis")
 local mgr = require("redis_server.manager")
+local utils = require("utils")
 require("skynet.manager")
-require("utils")
 require("service_type")
 
 local CMD = {
@@ -73,7 +73,7 @@ function CMD._syncToDbserver()
 		skynet.sleep(100)
 			
 		local now = os.date("*t")
-        -- dump(now, "系统时间")
+        -- utils.dump(now, "系统时间")
 
 		-- 每30秒同步一次服务器数据
 		if math.fmod(now.sec, CMD.syncInterval) == 0 then

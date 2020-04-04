@@ -1,9 +1,8 @@
-package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
 local skyhelper = require("helper")
+local utils = require("utils")
 require("skynet.manager")
-require("utils")
 require("service_type")
 
 local chat_logic_servers = {}  -- 服务ID
@@ -34,7 +33,7 @@ function CMD.start(content)
             chat_server_id = skynet.self(),
         })
     end
-    -- dump(chat_logic_servers, "chat_logic_servers")
+    -- utils.dump(chat_logic_servers, "chat_logic_servers")
 
     return 0
 end

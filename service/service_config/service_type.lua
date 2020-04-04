@@ -1,4 +1,4 @@
-require("utils")
+local utils = require("utils")
 
 ---------------------------------------------------------------------------------------
 -- 服务配置
@@ -12,4 +12,4 @@ SERVICE_TYPE = {
     CHAT    =  { ID= 7, NAME= ".chat_server",       DESC= "聊天服务器" },
 }
 
--- dump(SERVICE_TYPE, "SERVICE_TYPE")
+-- utils.dump(SERVICE_TYPE, "SERVICE_TYPE")

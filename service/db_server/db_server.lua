@@ -1,8 +1,8 @@
 local skynet = require("skynet")
 local service = require("skynet.service")
 local skyhelper = require("helper")
+local utils = require("utils")
 require("skynet.manager")
-require("utils")
 require("service_type")
 require("service_cmd")
 
@@ -24,7 +24,7 @@ function CMD.start(conf)
 
     CMD.debug = conf.debug
     if CMD.debug then
-        dump(conf, "conf")
+        utils.dump(conf, "conf")
     end
 
     for i=1, 10 do
@@ -35,7 +35,7 @@ function CMD.start(conf)
             db_server_id = skynet.self(),
         })
     end
-    -- dump(db_logic_servers, "db_logic_servers")
+    -- utils.dump(db_logic_servers, "db_logic_servers")
 
     return 0
 end

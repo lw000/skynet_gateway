@@ -1,4 +1,4 @@
-require("utils")
+local utils = require("utils")
 
 -- 服务内部协议指令
 -------------------------------------------------------------------------------------
@@ -54,8 +54,8 @@ CHAT_CMD = {
     }
 }
 
--- dump(DB_CMD, "DB_CMD")
--- dump(REDIS_CMD, "REDIS_CMD")
--- dump(LOG_CMD, "LOG_CMD")
--- dump(CENTER_CMD, "CENTER_CMD")
--- dump(LOGON_CMD, "LOGON_CMD")
+-- utils.dump(DB_CMD, "DB_CMD")
+-- utils.dump(REDIS_CMD, "REDIS_CMD")
+-- utils.dump(LOG_CMD, "LOG_CMD")
+-- utils.dump(CENTER_CMD, "CENTER_CMD")
+-- utils.dump(LOGON_CMD, "LOGON_CMD")

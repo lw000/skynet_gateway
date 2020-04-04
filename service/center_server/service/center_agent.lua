@@ -4,6 +4,7 @@ local packet = require("packet")
 local route = require("service.center_route")
 local skyhelper = require("helper")
 local logger = require("logger")
+local utils = require("utils")
 require("skynet.manager")
 require("service_type")
 require("proto_map")
@@ -28,7 +29,7 @@ end
 
 function handler.send_client_message(head, data)
     if handler.debug then
-        dump(head, handler.servername .. ".head")
+        utils.dump(head, handler.servername .. ".head")
     end
     handler.send(handler.fd, head, data)
 end
@@ -95,7 +96,7 @@ function handler.message(fd, msg)
     }
 
     if handler.debug then
-        dump(head, handler.servername .. ".head")
+        utils.dump(head, handler.servername .. ".head")
     end
 
     -- 转发到对应服务器

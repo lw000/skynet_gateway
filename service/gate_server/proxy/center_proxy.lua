@@ -5,8 +5,8 @@ local timer = require("timer")
 local hub = require("hub")
 local packet = require("packet")
 local skyhelper = require("helper")
+local utils = require("utils")
 require("skynet.manager")
-require("utils")
 require("service_cmd")
 require("service_type")
 require("proto_func")
@@ -76,7 +76,7 @@ end
 
 function CMD.send_center_message(content)
     if CMD.debug then
-        dump(content, CMD.servername .. ".content")
+        utils.dump(content, CMD.servername .. ".content")
     end
     CMD.sendWithClientId(content.mid, content.sid, content.clientId, content.data)
 end
@@ -90,7 +90,7 @@ function CMD.registerService()
     )
     CMD.send(CENTER_CMD.MDM, CENTER_CMD.SUB.REGIST, content, function(content)
         local data = functor.unpack_AckRegService(content)
-        -- dump(data, "AckRegistService")
+        -- utils.dump(data, "AckRegistService")
         if data.result == 0 then
             CMD.serverId = data.serverId
             skynet.error("center_proxy registered serverId=" .. data.serverId)

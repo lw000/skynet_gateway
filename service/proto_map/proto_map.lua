@@ -1,7 +1,7 @@
+local utils = require("utils")
 require("service_type")
 require("service_cmd")
 require("proto_func")
-require("utils")
 
 proto_map =
 {

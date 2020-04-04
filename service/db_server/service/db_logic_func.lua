@@ -1,13 +1,13 @@
 local skynet = require("skynet")
 local cjson = require("cjson")
 local database = require("database.database")
-require("utils")
+local utils = require("utils")
 
 local logic = {}
 
 -- 注册账号
 function logic.register_account(dbconn, service, content)
-    dump(content, "content")
+    utils.dump(content, "content")
     local reply = {
         result = 0,
         errmsg = "注册成功",
@@ -17,7 +17,7 @@ end
 
 -- 登录账号
 function logic.login_account(dbconn, service, content)
-    dump(content, "content")
+    utils.dump(content, "content")
 
     if content.account == "" then
         return {
@@ -42,7 +42,7 @@ function logic.login_account(dbconn, service, content)
             errmsg = "未知错误",
         }
     end
-    dump(result, "result")
+    utils.dump(result, "result")
 
     if #result == 0 then
         return {
@@ -73,7 +73,7 @@ end
 -- 记录日志
 function logic.writeLog(dbconn, service, content)
     local data = cjson.decode(content)
-    dump(data, "数据库·请求日志）")
+    utils.dump(data, "数据库·请求日志）")
 
     local sql = [[INSERT INTO reqLog (clientIp, content, updateTime) VALUES (?,?,?);]]
     local now = os.date("%Y-%m-%d %H:%M:%S", os.time())

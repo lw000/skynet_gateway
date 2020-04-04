@@ -1,7 +1,7 @@
-local skynet = require "skynet"
-require "skynet.manager"
-local cluster = require "skynet.cluster"
-local logger = require "logger"
+local skynet = require("skynet")
+local cluster = require("skynet.cluster")
+local logger = require("logger")
+require("skynet.manager")
 
 --id
 local svr_info

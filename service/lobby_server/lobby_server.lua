@@ -1,8 +1,8 @@
 local skynet = require("skynet")
 local service = require("skynet.service")
 local mgr = require("lobby_manager")
+local utils = require("utils")
 require("skynet.manager")
-require("utils")
 require("service_type")
 
 local CMD = {

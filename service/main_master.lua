@@ -1,8 +1,7 @@
-package.path = ";./service/?.lua;" .. package.path
 local skynet = require("skynet")
 local cluster = require "skynet.cluster"
 local conf = require("config.config")
-require("utils")
+local utils = require("utils")
 
 local function loadstring(chunk, chunkname)
     assert(chunk ~= nil)
@@ -13,7 +12,7 @@ end
 local function onStart()
     skynet.error("加载配置文件..")
     local config = loadstring(skynet.getenv("config"), "@master.config")
-    dump(config)
+    utils.dump(config)
     skynet.error("配置文件加载完成")
     
     skynet.newservice("debug_console", config.debugPort)

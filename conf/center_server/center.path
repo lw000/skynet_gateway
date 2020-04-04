@@ -8,7 +8,7 @@ lua_cpath = root.."lib/luaclib/?.so"
  
 -- 使用Lua语言编写的Skynet核心库
 lua_path = root.."lib/lualib/?.lua;"..
-    root.."lib/lualib/?/init.lua"..
+    root.."lib/lualib/?/init.lua;"..
     root.."service/?.lua;"..
     root.."service/common/?.lua;"..
     root.."service/sharelib/?.lua;"..

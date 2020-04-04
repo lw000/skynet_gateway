@@ -1,5 +1,5 @@
 local skynet = require("skynet")
-require("utils")
+local utils = require("utils")
 
 local function loadstring(chunk, chunkname)
 	assert(chunk ~= nil)
@@ -10,7 +10,7 @@ end
 local function onStart()
     local config = loadstring(skynet.getenv("config"), "@gate.config")
     assert(config ~= nil)
-    -- dump(config, "config")
+    -- utils.dump(config, "config")
 
     skynet.newservice("debug_console", config.debugPort)
 

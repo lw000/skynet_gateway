@@ -2,7 +2,8 @@ local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
 local cluster = require("skynet.cluster")
-local skyhelper = require("helper")
+local skyhelper = require("skycommon.helper")
+local utils = require("utils")
 require("skynet.manager")
 
 -- 注册网关列表
@@ -50,7 +51,7 @@ function handler.get_gate_config(svrid)
 end
 
 function handler.register_gate(info)
-    dump(info, "register_gate info")
+    utils.dump(info, "register_gate info")
     local gate_info = gate_list[info.svrid]
     if gate_info then
         return gate_info.service

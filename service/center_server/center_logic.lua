@@ -1,7 +1,7 @@
 local skynet = require("skynet")
 local cjson = require("cjson")
 local skyhelper = require("helper")
-require("utils")
+local utils = require("utils")
 require("service_cmd")
 
 local service_id = 10000
@@ -12,10 +12,9 @@ local logic = {}
 
 -- 服务注册
 function logic.onRegist(head, content)
-    -- dump(head, "head")
-    -- dump(content, "ReqRegService")
-
-    -- dump(service_register, "service_register")
+    -- utils.dump(head, "head")
+    -- utils.dump(content, "ReqRegService")
+    -- utils.dump(service_register, "service_register")
 
     local servers = service_register[content.svrType]
     if servers == nil then
@@ -36,9 +35,8 @@ end
 
 -- 服务卸载
 function logic.onUnregist(head, content)
-    dump(head, "head")
-    dump(content, "ReqRegService")
-
+    utils.dump(head, "head")
+    utils.dump(content, "ReqRegService")
 end
 
 return logic

@@ -3,6 +3,7 @@ local socket = require("skynet.socket")
 local service = require("skynet.service")
 local cluster = require("skynet.cluster")
 local skyhelper = require("skycommon.helper")
+local utils = require("utils")
 require("skynet.manager")
 require("service_type")
 
@@ -33,7 +34,7 @@ function CMD.start(config)
         })
         center_proxy_servers[i] = center_proxy
     end
-    -- dump(center_proxy_servers, "center_proxy_servers")
+    -- utils.dump(center_proxy_servers, "center_proxy_servers")
 
     -- master_proxy = cluster.proxy("db", "@master_service")
 

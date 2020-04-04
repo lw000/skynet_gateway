@@ -3,10 +3,11 @@ local socket = require("skynet.socket")
 local service = require("skynet.service")
 local cluster = require("skynet.cluster")
 local logic = require("center_logic")
-local skyhelper = require("helper")
+local skyhelper = require("skycommon.helper")
+local utils = require("utils")
 require("skynet.manager")
-require("service_type")
-require("proto_map")
+require("service_config.service_type")
+require("proto_map.proto_map")
 
 -- 业务处理接口映射表
 local methods = {
@@ -51,7 +52,7 @@ end
 
 function CMD.dispatch_send_message(head, content)
     if CMD.debug then
-        dump(head, CMD.servername .. ".head")
+        utils.dump(head, CMD.servername .. ".head")
     end
 
     local method = methods[head.sid]

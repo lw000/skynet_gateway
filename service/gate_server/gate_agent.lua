@@ -2,6 +2,7 @@ local skynet = require("skynet")
 local websocket = require("http.websocket")
 local packet = require("packet")
 local skyhelper = require("helper")
+local utils = require("utils")
 require("skynet.manager")
 require("service_type")
 require("proto_map")
@@ -98,7 +99,7 @@ local handler = {
 }
 
 function handler.accept(fd, protocol, addr, content)
-    -- dump(content, "content")
+    -- utils.dump(content, "content")
     handler.debug = content.debug
     center_proxy_server_id = content.center_proxy_server_id
 

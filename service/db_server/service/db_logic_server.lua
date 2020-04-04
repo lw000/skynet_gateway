@@ -3,8 +3,8 @@ local service = require("skynet.service")
 local skyhelper = require("helper")
 local database = require("database.database")
 local logic = require("service.db_logic_func")
+local utils = require("utils")
 require("skynet.manager")
-require("utils")
 
 local db_server_id = -1
 

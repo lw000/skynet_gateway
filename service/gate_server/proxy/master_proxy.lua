@@ -2,8 +2,8 @@ local skynet = require("skynet")
 local cluster = require("skynet.cluster")
 local snax = require("skynet.snax")
 local logger = require("logger")
+local utils = require("utils")
 require("skynet.manager")
-require("utils")
 
 --
 local is_first = true
@@ -33,7 +33,7 @@ local function master_send(command, ...)
 end
 
 local function on_load_config(config)
-	dump(config,"config")
+	utils.dump(config,"config")
 
 	skynet.error("on_load_config:",config.cluster.name,config.cluster.addr,config.tcpservice)
 	if is_first then

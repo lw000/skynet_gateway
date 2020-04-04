@@ -1,6 +1,6 @@
 local skynet = require("skynet")
 local packet = require("network.packet")
-
+local utils = require("utils")
 local WSClient = class("WSClient")
 
 function WSClient:ctor()
@@ -70,7 +70,7 @@ function WSClient:connect(scheme, host, path, heartbeattime)
     skynet.fork(function()
         -- debug.traceback
         local ok = xpcall(function() self:loopRead() end, function(err) self._on_error(err) end)
-        -- dump(ok, "run")
+        -- utils.dump(ok, "run")
         skynet.error("websocket loopRead exit")
         self:reset()
     end)

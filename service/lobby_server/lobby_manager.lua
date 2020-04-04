@@ -1,7 +1,7 @@
 local skynet = require("skynet")
 local skyhelper = require("helper")
 local logic = require("lobby_logic")
-require("utils")
+local utils = require("utils")
 require("service_type")
 require("proto_map")
 
@@ -50,7 +50,7 @@ function manager.dispatch(head, content)
         return ack 
     end
     
-    -- dump(head, manager.servername .. ".head")
+    -- utils.dump(head, manager.servername .. ".head")
 
     -- 转发消息
     skyhelper.send(head.center_agent, "send_client_message", head, ack)
