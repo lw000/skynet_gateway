@@ -1,5 +1,5 @@
 local skynet = require("skynet")
-require("dump")
+require("utils")
 
 local skyhelper = {}
 

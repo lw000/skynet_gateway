@@ -3,7 +3,7 @@ local skynet = require("skynet")
 local service = require("skynet.service")
 local skyhelper = require("helper")
 require("skynet.manager")
-require("export")
+require("utils")
 require("service_type")
 
 local chat_logic_servers = {}  -- 服务ID

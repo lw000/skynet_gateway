@@ -3,7 +3,7 @@ local service = require("skynet.service")
 local redis = require("skynet.db.redis")
 local mgr = require("redis_server.manager")
 require("skynet.manager")
-require("export")
+require("utils")
 require("service_type")
 
 local CMD = {

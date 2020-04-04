@@ -4,7 +4,7 @@ local skyhelper = require("helper")
 local database = require("database.database")
 local logic = require("service.db_logic_func")
 require("skynet.manager")
-require("export")
+require("utils")
 
 local db_server_id = -1
 

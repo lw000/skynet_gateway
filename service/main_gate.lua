@@ -1,6 +1,5 @@
-package.path = ";./service/?.lua;" .. package.path
 local skynet = require("skynet")
-require("common.export")
+require("utils")
 
 local function loadstring(chunk, chunkname)
 	assert(chunk ~= nil)

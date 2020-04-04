@@ -1,6 +1,6 @@
 local skynet = require("skynet")
 local packet = require("packet")
-require("export")
+require("utils")
 
 local WSClient = class("WSClient")
 

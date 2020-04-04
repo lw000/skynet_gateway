@@ -1,7 +1,7 @@
 require("service_type")
 require("service_cmd")
 require("proto_func")
-require("export")
+require("utils")
 
 proto_map =
 {

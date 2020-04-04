@@ -1,7 +1,7 @@
 package.path = ";./service/?.lua;" .. package.path
 local skynet = require("skynet")
 local conf = require("config.config")
-require("common.export")
+require("utils")
 
 local function onStart()
     skynet.newservice("debug_console", conf.center.debugPort)

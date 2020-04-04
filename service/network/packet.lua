@@ -1,4 +1,4 @@
-require("export")
+require("utils")
 local Packet = class("Packet")
 
 function Packet:ctor()

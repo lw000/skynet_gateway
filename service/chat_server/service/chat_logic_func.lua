@@ -1,7 +1,7 @@
 local skynet = require("skynet")
 local cjson = require("cjson")
-local skyhelper = require("skycommon.helper")
-require("common.export")
+local skyhelper = require("helper")
+require("utils")
 
 local logic = {
 

@@ -3,7 +3,7 @@ local cluster = require("skynet.cluster")
 local snax = require("skynet.snax")
 local logger = require("logger")
 require("skynet.manager")
-require("export")
+require("utils")
 
 --
 local is_first = true

@@ -2,7 +2,7 @@ package.path = ";./service/?.lua;" .. package.path
 local skynet = require("skynet")
 local cluster = require "skynet.cluster"
 local conf = require("config.config")
-require("common.export")
+require("utils")
 
 local function loadstring(chunk, chunkname)
     assert(chunk ~= nil)
