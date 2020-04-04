@@ -1,3 +1,4 @@
+require("common.function")
 local utils = require("utils")
 local Packet = class("Packet")
 
@@ -67,6 +68,5 @@ end
 function Packet:data()
     return self._data
 end
-
 
 return Packet
