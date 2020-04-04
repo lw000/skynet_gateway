@@ -1,7 +1,7 @@
-require("service_config.type")
-require("service_config.cmd")
-require("proto_map.proto_func")
-require("common.export")
+require("service_type")
+require("service_cmd")
+require("proto_func")
+require("export")
 
 proto_map =
 {

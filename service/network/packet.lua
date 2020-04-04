@@ -1,5 +1,4 @@
-require("common.export")
-
+require("export")
 local Packet = class("Packet")
 
 function Packet:ctor()

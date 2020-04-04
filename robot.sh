@@ -1,0 +1,1 @@
+./bin/skynet ./conf/robot_server/robot

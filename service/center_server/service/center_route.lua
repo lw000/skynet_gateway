@@ -1,5 +1,5 @@
-require("service_config.cmd")
-require("service_config.type")
+require("service_cmd")
+require("service_type")
 
 -- 中心F路由转发映射表
 local Route = 

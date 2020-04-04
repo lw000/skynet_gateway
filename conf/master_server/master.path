@@ -1,17 +1,31 @@
 -- 项目根目录
 root = "./"
  
+lualoader = root.."lib/lualib/loader.lua"
+
 -- 使用C语言编写的Skynet核心库
 lua_cpath = root.."lib/luaclib/?.so"
  
 -- 使用Lua语言编写的Skynet核心库
-lua_path = root.."lib/lualib/?.lua;"..root.."lib/lualib/?/init.lua"
+lua_path = root.."lib/lualib/?.lua;"..
+    root.."lib/lualib/?/init.lua"..
+    root.."service/?.lua;"..
+    root.."service/common/?.lua;"..
+    root.."service/sharelib/?.lua;"..
+    root.."service/skycommon/?.lua;"..
+    root.."service/network/?.lua;"
  
 -- 使用C语言编写的Skynet核心服务
 cpath = root.."lib/cservice/?.so"
  
 -- 使用Lua语言编写的Skynet核心服务与自定义的服务
-luaservice = root.."lib/service/?.lua;"..root.."service/?.lua;"
-    ..root.."service/master_server/?.lua;"
+luaservice = root.."lib/service/?.lua;"..
+    root.."service/?.lua;"..
+    root.."service/common/?.lua;"..
+    root.."service/sharelib/?.lua;"..
+    root.."service/skycommon/?.lua;"..
+    root.."service/network/?.lua;"..
+    root.."service/master_server/?.lua;"
  
-lualoader = root.."lib/lualib/loader.lua"
+-- 集群节点配置文件
+cluster = root.."conf/clusterconfig.lua"

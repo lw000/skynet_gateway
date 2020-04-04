@@ -1,9 +1,8 @@
-package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
 local cluster = require("skynet.cluster")
-local skyhelper = require("skycommon.helper")
+local skyhelper = require("helper")
 require("skynet.manager")
 
 -- 注册网关列表
@@ -33,8 +32,11 @@ end
 
 local handler = {}
 
-function handler.get(key)
-    return key
+function handler.start()
+    -- cluster.reload {
+    --     master = "127.0.0.1:9100",
+    -- }
+    cluster.open("master")
 end
 
 function handler.get_gate_config(svrid)
@@ -48,7 +50,7 @@ function handler.get_gate_config(svrid)
 end
 
 function handler.register_gate(info)
-    skynet.error("register_gate:",info.svrid,info.cluster.name,info.cluster.addr,info.service)
+    dump(info, "register_gate info")
     local gate_info = gate_list[info.svrid]
     if gate_info then
         return gate_info.service
@@ -56,7 +58,7 @@ function handler.register_gate(info)
 		-- 注册节点
 		cluster.reload({[info.cluster.name] = info.cluster.addr})
 		-- 建立连接
-		local service = skynet.newservice("master_proxy")
+		local service = skynet.newservice("proxy/master_proxy")
         skynet.call(service,"lua","open", info)
         local reg_info = {
             svrid = id,

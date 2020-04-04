@@ -1,8 +1,8 @@
 local skynet = require("skynet")
 local cjson = require("cjson")
-local skyhelper = require("skycommon.helper")
-require("common.export")
-require("service_config.cmd")
+local skyhelper = require("helper")
+require("export")
+require("service_cmd")
 
 local service_id = 10000
 

@@ -1,5 +1,5 @@
 local skynet = require("skynet")
-require("common.export")
+require("export")
 
 -- local events = {
 --     [1]={

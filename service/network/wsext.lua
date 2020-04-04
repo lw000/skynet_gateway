@@ -1,6 +1,6 @@
 local skynet = require("skynet")
-local packet = require("network.packet")
-require("common.export")
+local packet = require("packet")
+require("export")
 
 local WSClient = class("WSClient")
 
@@ -30,7 +30,7 @@ function WSClient:connect(scheme, host, path)
     self._path = path
 
     local url = string.format("%s://%s/%s", self._scheme, self._host, self._path)
-    skynet.error("ws connect to", url)
+    -- skynet.error("ws connect to", url)
 
     local do_connect = function()
         self._websocket = require "http.websocket"
@@ -46,7 +46,7 @@ function WSClient:connect(scheme, host, path)
         return 1, "ws connect fail"
     end
 
-    skynet.error("ws connect success wsid=" .. self._wsid)
+    -- skynet.error("ws connect success wsid=" .. self._wsid)
 
     self._open = true
 

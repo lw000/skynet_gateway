@@ -1,9 +1,9 @@
 local skynet = require("skynet")
-local skyhelper = require("skycommon.helper")
-local logic = require("chat_server.service.chat_logic_func")
-require("common.export")
-require("service_config.type")
-require("proto_map.proto_map")
+local skyhelper = require("helper")
+local logic = require("service.chat_logic_func")
+require("export")
+require("service_type")
+require("proto_map")
 
 -- 业务处理接口映射表
 local methods = {

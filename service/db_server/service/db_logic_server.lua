@@ -1,12 +1,10 @@
-package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
-local skyhelper = require("skycommon.helper")
-local database = require("db_server.database.database")
-local logic = require("db_server.service.db_logic_func")
+local skyhelper = require("helper")
+local database = require("database.database")
+local logic = require("service.db_logic_func")
 require("skynet.manager")
-require("skynet.manager")
-require("common.export")
+require("export")
 
 local db_server_id = -1
 

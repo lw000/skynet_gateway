@@ -1,15 +1,14 @@
-package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
-local ws = require("network.wsext")
-local timer = require("sharelib.timer")
-local hub = require("sharelib.hub")
-local packet = require("network.packet")
+local ws = require("wsext")
+local timer = require("timer")
+local hub = require("hub")
+local packet = require("packet")
 require("skynet.manager")
-require("common.export")
-require("service_config.type")
-require("proto_map.proto_map")
-require("proto_map.proto_func")
+require("export")
+require("service_type")
+require("proto_map")
+require("proto_func")
 
 local CMD = {
     scheme = "ws",

@@ -1,10 +1,9 @@
-package.path = package.path .. ";./service/?.lua;"
-local skynet = require "skynet"
-require "skynet.manager"
-local cluster = require "skynet.cluster"
-local snax = require "skynet.snax"
-local logger = require "sharelib.logger"
-require("common.export")
+local skynet = require("skynet")
+local cluster = require("skynet.cluster")
+local snax = require("skynet.snax")
+local logger = require("logger")
+require("skynet.manager")
+require("export")
 
 --
 local is_first = true
@@ -14,12 +13,10 @@ local svrid = nil
 local proxy = nil
 
 local error = nil
+
 local keepalive = nil
 
 local function master_call(command, ...)
-	local args = {...}
-	dump(args, "args")
-	skynet.error("proxy", proxy)
 	if proxy then
 		return pcall(skynet.call, proxy, "lua",command, ...)
 	else
@@ -75,7 +72,6 @@ local function connect()
 			logger.trace("获取网关配置失败")
 			return
 		end
-		dump(ret,"ret")
 		return on_load_config(ret)
 	end
 end

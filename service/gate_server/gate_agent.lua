@@ -1,11 +1,10 @@
-package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local websocket = require("http.websocket")
-local packet = require("network.packet")
-local skyhelper = require("skycommon.helper")
+local packet = require("packet")
+local skyhelper = require("helper")
 require("skynet.manager")
-require("service_config.type")
-require("proto_map.proto_map")
+require("service_type")
+require("proto_map")
 
 local gate = ...
 
@@ -22,7 +21,7 @@ end
 
 function SOCKET.handshake(fd, header, url)
     local addr = websocket.addrinfo(fd)
-    skynet.error("ws handshake from", "addr=" .. addr, "url=" .. url)
+    -- skynet.error("ws handshake from", "addr=" .. addr, "url=" .. url)
     
     -- skynet.error("----header-----")
     -- for k, v in pairs(header) do

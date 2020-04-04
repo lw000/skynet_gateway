@@ -22,3 +22,6 @@ logpath = "."
 --address = "127.0.0.1:10002"
 --master = "127.0.0.1:10000"
 --standalone = "0.0.0.0:10000"
+
+-- 集群节点配置文件
+cluster = root.."conf/clusterconfig.lua"

@@ -1,10 +1,10 @@
 package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
-local skyhelper = require("skycommon.helper")
+local skyhelper = require("helper")
 require("skynet.manager")
-require("common.export")
-require("service_config.type")
+require("export")
+require("service_type")
 
 local chat_logic_servers = {}  -- 服务ID
 

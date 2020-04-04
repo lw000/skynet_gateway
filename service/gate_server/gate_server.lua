@@ -1,11 +1,10 @@
-package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
 local cluster = require("skynet.cluster")
 local skyhelper = require("skycommon.helper")
 require("skynet.manager")
-require("service_config.type")
+require("service_type")
 
 local center_proxy_servers = {}  -- 后端代理服务ID
 local master_proxy
@@ -14,25 +13,23 @@ local CMD = {
     servertype = SERVICE_TYPE.GATE.ID,
     servername = SERVICE_TYPE.GATE.NAME,
     debug = false,
-    port = 8080,
     agents = {},
 }
 
-function CMD.start(content)
-    assert(content ~= nil)
-    CMD.debug = content.debug
+function CMD.start(config)
+    assert(config ~= nil)
+    assert(config.port > 0)
 
-    assert(content.port > 0)
-    CMD.port = content.port
+    CMD.debug = config.debug
 
     local master = skynet.newservice("proxy/master_proxy")
     skynet.call(master, "lua", "open", 1)
         
-    local host = string.format("%s:%d", content.centerIP, content.centerPort)
+    local host = string.format("%s:%d", config.centerIP, config.centerPort)
     for i=1, 10 do
         local center_proxy = skynet.newservice("proxy/center_proxy", skynet.self())
         skynet.call(center_proxy, "lua", "start", "ws", host, {
-            debug = content.debug,
+            debug = config.debug,
         })
         center_proxy_servers[i] = center_proxy
     end
@@ -50,7 +47,7 @@ function CMD.start(content)
     --     skynet.error(cluster.call("db", "@master_service", "GET", "b"))
     -- end)
 
-    CMD.listen()
+    CMD.listen(config.port)
     
     return 0
 end
@@ -59,11 +56,11 @@ function CMD.stop()
 
 end
 
-function CMD.listen()
-    local fd = socket.listen("0.0.0.0", CMD.port)
+function CMD.listen(port)
+    local fd = socket.listen("0.0.0.0", port)
     assert(fd ~= -1, "listen fail")
 
-    skynet.error(string.format("listen port:" .. CMD.port))
+    skynet.error(string.format("listen port:" .. port))
     local protocol = "ws"
     socket.start(fd, function(id, addr)
         local agent = skynet.newservice("gate_agent", skynet.self())

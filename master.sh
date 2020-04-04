@@ -1,0 +1,1 @@
+./bin/skynet ./conf/master_server/master

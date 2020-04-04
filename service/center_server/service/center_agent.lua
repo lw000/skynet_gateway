@@ -1,13 +1,12 @@
-package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local websocket = require("http.websocket")
-local packet = require("network.packet")
-local route = require("center_server.service.center_route")
-local skyhelper = require("skycommon.helper")
-local logger = require("sharelib.logger")
+local packet = require("packet")
+local route = require("service.center_route")
+local skyhelper = require("helper")
+local logger = require("logger")
 require("skynet.manager")
-require("service_config.type")
-require("proto_map.proto_map")
+require("service_type")
+require("proto_map")
 
 local center = ...
 
@@ -41,13 +40,13 @@ end
 
 function handler.handshake(fd, header, url)
     local addr = websocket.addrinfo(fd)
-    logger.debug("ws handshake from add=%s url=%s", addr, url)
+    -- logger.debug("ws handshake from add=%s url=%s", addr, url)
     
-    logger.debug("----header-----")
-    for k, v in pairs(header) do
-        skynet.error(k, v)
-    end
-    logger.debug("-----end-----")
+    -- logger.debug("----header-----")
+    -- for k, v in pairs(header) do
+    --     skynet.error(k, v)
+    -- end
+    -- logger.debug("-----end-----")
 end
 
 function handler.message(fd, msg)

@@ -1,10 +1,9 @@
-package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
-local mgr = require("lobby_server.lobby_manager")
+local mgr = require("lobby_manager")
 require("skynet.manager")
-require("common.export")
-require("service_config.type")
+require("export")
+require("service_type")
 
 local CMD = {
 	servicetype = SERVICE_TYPE.LOBBY.ID, 	-- 服务类型

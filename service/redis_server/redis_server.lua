@@ -1,11 +1,10 @@
-package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local service = require("skynet.service")
 local redis = require("skynet.db.redis")
 local mgr = require("redis_server.manager")
 require("skynet.manager")
-require("common.export")
-require("service_config.type")
+require("export")
+require("service_type")
 
 local CMD = {
 	servertype = SERVICE_TYPE.REDIS.ID, 	-- 服务类型

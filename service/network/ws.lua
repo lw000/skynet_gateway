@@ -35,7 +35,7 @@ function WSClient:connect(scheme, host, path, heartbeattime)
     self._heartbeattime = heartbeattime
 
     local url = string.format("%s://%s/%s", self._scheme, self._host, self._path)
-    skynet.error("ws connect to", url)
+    -- skynet.error("ws connect to", url)
 
     local do_connect = function()
         self._websocket = require "http.websocket"
@@ -51,7 +51,7 @@ function WSClient:connect(scheme, host, path, heartbeattime)
         return 1, "ws connect fail"
     end
 
-    skynet.error("ws connect success wsid=" .. self._wsid)
+    -- skynet.error("ws connect success wsid=" .. self._wsid)
 
     self._open = true
 

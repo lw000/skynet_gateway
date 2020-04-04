@@ -1,7 +1,7 @@
 local skynet = require("skynet")
 local cjson = require("cjson")
-local skyhelper = require("skycommon.helper")
-require("common.export")
+local skyhelper = require("helper")
+require("export")
 
 local function skynet_db_call(command, ...)
     local ok, data = pcall(skyhelper.call, SERVICE_TYPE.DB.NAME, "dispatch_call_message", command, SERVICE_TYPE.LOBBY.NAME, ...)

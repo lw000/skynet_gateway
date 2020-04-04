@@ -1,13 +1,12 @@
-package.path = package.path .. ";./service/?.lua;"
 local skynet = require("skynet")
 local socket = require("skynet.socket")
 local service = require("skynet.service")
 local cluster = require("skynet.cluster")
-local logic = require("center_server.center_logic")
-local skyhelper = require("skycommon.helper")
+local logic = require("center_logic")
+local skyhelper = require("helper")
 require("skynet.manager")
-require("service_config.type")
-require("proto_map.proto_map")
+require("service_type")
+require("proto_map")
 
 -- 业务处理接口映射表
 local methods = {

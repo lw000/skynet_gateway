@@ -1,4 +1,4 @@
-local skynet = require("skynet")
+require("function")
 
 local function dump_value_(v)
     if type(v) == "string" then
@@ -70,6 +70,5 @@ function dump(value, description, nesting)
 
     for i, line in ipairs(result) do
         print(line)
-        -- skynet.error(line)
     end
 end
