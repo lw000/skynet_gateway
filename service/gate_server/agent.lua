@@ -65,6 +65,7 @@ function SOCKET.message(fd, msg)
         clientId = skynet.self(),
         data = pk:data()
     }
+    
     skyhelper.send(center_proxy_server_id, "send_center_message", content)
 end
 
@@ -78,11 +79,13 @@ end
 
 function SOCKET.close(fd, code, reason)
     -- skynet.error("ws close from: " .. tostring(fd), code, reason)
+    skyhelper.send(gate, "kick_agent", skynet.self())
     skynet.exit()
 end
 
 function SOCKET.error(fd)
     -- skynet.error("ws error from: " .. tostring(fd))
+    skyhelper.send(gate, "kick_agent", skynet.self())
     skynet.exit()
 end
 
@@ -94,7 +97,7 @@ function SOCKET.send(data)
 end
 
 local handler = {
-    servername = ".gate_agent",
+    -- servername = ".gate_agent",
     debug = false,
 }
 
@@ -121,7 +124,7 @@ end
 
 skynet.init(
     function()
-        skynet.register(handler.servername)
+        -- skynet.register(handler.servername)
     end
 )
 

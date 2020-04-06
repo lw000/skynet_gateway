@@ -80,7 +80,7 @@ function handler.regist()
 
     handler.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(msg)
         local data = functor.unpack_AckRegist(msg)
-        utils.dump(data, "AckRegist")
+        -- utils.dump(data, "AckRegist")
 
         handler.logon()
     end)
@@ -96,7 +96,7 @@ function handler.logon()
 
     handler.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(msg)
         local data = functor.unpack_AckLogin(msg)
-        utils.dump(data, "AckLogin")
+        -- utils.dump(data, "AckLogin")
         
         -- 测试发送消息
         skynet.fork(handler.chat, data.userInfo.userId)
@@ -113,7 +113,7 @@ function handler.chat(userId)
         })
         handler.send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(msg)
             local data = functor.unpack_AckChatMessage(msg)
-            utils.dump(data, "AckChatMessage")
+            -- utils.dump(data, "AckChatMessage")
         end)
         skynet.sleep(100)
     end

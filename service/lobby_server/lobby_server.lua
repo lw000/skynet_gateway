@@ -1,9 +1,17 @@
 local skynet = require("skynet")
 local service = require("skynet.service")
-local mgr = require("lobby_manager")
 local utils = require("utils")
+local logic = require("lobby_logic")
+local skyhelper = require("skycommon.helper")
 require("skynet.manager")
 require("service_type")
+require("proto_map")
+
+-- 业务处理接口映射表
+local methods = {
+    [LOBBY_CMD.SUB.REGIST] = {func=logic.onReqRegist, desc="请求登录"},
+    [LOBBY_CMD.SUB.LOGON] = {func=logic.onReqLogin, desc="请求登录"},
+}
 
 local handler = {
 	servicetype = SERVICE_TYPE.LOBBY.ID, 	-- 服务类型
@@ -13,29 +21,40 @@ local handler = {
 
 function handler.start(content)
     assert(content ~= nil, "content is nil")
-	math.randomseed(os.time())
-
     handler.debug = content.debug
-
-	mgr.start(handler.servername, handler.debug)
-
     return 0
 end
 
 function handler.stop() 
-    mgr.stop()
     skynet.exit();
     return 0
 end
 
--- 登录服·send消息处理接口
-function handler.dispatch_send_message(head, content)
-	mgr.dispatch(head, content)
+local function dispatch_send_message(head, content)
+    -- 查询业务处理函数
+    local method = methods[head.sid]
+    assert(method ~= nil)
+    if not method then
+        local errmsg = "unknown " .. handler.servername .. " [sid=" .. tostring(head.sid) .. "] command"
+        skynet.error(errmsg)
+        return
+    end
+
+    local ret, ack = proto_map.exec(head, content, method.func)
+    if ret ~= 0 then
+        skynet.error(ret, ack)
+        return 
+    end
+
+    skyhelper.send(head.agent, "send_client_message", head, ack)
 end
 
--- 登录服·call消息处理接口
-function handler.dispatch_call_message(head, content)
-	return mgr.dispatch(head, content)
+-- 登录服·消息处理接口
+function handler.dispatch_send_message(head, content)
+    if handler.debug then
+        utils.dump(head, handler.servername .. ".head")
+    end
+	dispatch_send_message(head, content)
 end
 
 local function dispatch()

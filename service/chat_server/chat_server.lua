@@ -15,7 +15,7 @@ local function get_chat_logic_servers(agent)
 end
 
 local function dispatch_send_message(head, content)
-    skyhelper.send(get_chat_logic_servers(head.center_agent), "dispatch_send_message", head, content)
+    skyhelper.send(get_chat_logic_servers(head.agent), "dispatch_send_message", head, content)
 end
 
 local handler = {
@@ -50,8 +50,9 @@ end
 
 -- 聊天服·消息处理接口
 function handler.dispatch_send_message(head, content)
-    -- utils.dump(head, "head")
-    -- utils.dump(content, "content")
+    if handler.debug then
+        utils.dump(head, handler.servername .. ".head")
+    end
     return dispatch_send_message(head, content)
 end
 

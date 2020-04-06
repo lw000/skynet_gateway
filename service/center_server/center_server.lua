@@ -42,7 +42,7 @@ function handler.listen(port)
     skynet.error(string.format("ws listen port:" .. port))
     
     socket.start(fd, function(id, addr)
-        local agent = skynet.newservice("service/center_agent", skynet.self())
+        local agent = skynet.newservice("agent", skynet.self())
         skynet.send(agent, "lua", "accept", id, handler.protocol, addr, {
             debug = handler.debug,
         })
@@ -68,7 +68,7 @@ function handler.dispatch_send_message(head, content)
         return ack 
     end
 
-    skyhelper.send(head.center_agent, "send_client_message", head, ack)
+    skyhelper.send(head.agent, "send_client_message", head, ack)
 end
 
 function handler.register_service(head, content)

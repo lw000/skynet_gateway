@@ -7,21 +7,24 @@ local utils = require("utils")
 require("skynet.manager")
 require("service_type")
 
-local center_proxy_servers = {}  -- 后端代理服务ID
 local master_proxy
 
-local CMD = {
+local center_proxy_servers = {}  -- 后端代理服务ID
+
+local agents = {}
+
+local handler = {
     servertype = SERVICE_TYPE.GATE.ID,
     servername = SERVICE_TYPE.GATE.NAME,
     debug = false,
-    agents = {},
+    
 }
 
-function CMD.start(config)
+function handler.start(config)
     assert(config ~= nil)
     assert(config.port > 0)
 
-    CMD.debug = config.debug
+    handler.debug = config.debug
 
     local master = skynet.newservice("proxy/master_proxy")
     skynet.call(master, "lua", "open", 1)
@@ -36,62 +39,48 @@ function CMD.start(config)
     end
     -- utils.dump(center_proxy_servers, "center_proxy_servers")
 
-    -- master_proxy = cluster.proxy("db", "@master_service")
-
-    -- -- cluster.reload {
-    -- --     db = "127.0.0.1:2528",
-    -- --     db2 = "127.0.0.1:2529"
-    -- -- }
-
-    -- skynet.fork(function ( ... )
-    --     skynet.error(pcall(skynet.call, master_proxy, "GET", "a"))
-    --     skynet.error(cluster.call("db", "@master_service", "GET", "b"))
-    -- end)
-
-    CMD.listen(config.port)
+    handler.listen(config.port)
     
     return 0
 end
 
-function CMD.stop()
+function handler.stop()
+    skynet.exit()
 
+    return 0
 end
 
-function CMD.listen(port)
+function handler.listen(port)
     local fd = socket.listen("0.0.0.0", port)
-    assert(fd ~= -1, "listen fail")
+    assert(fd ~= -1, "gate listen fail")
 
     skynet.error(string.format("listen port:" .. port))
     local protocol = "ws"
     socket.start(fd, function(id, addr)
-        local agent = skynet.newservice("gate_agent", skynet.self())
-        CMD.agents[agent] = agent
+        local agent = skynet.newservice("agent", skynet.self())
+        agents[agent] = agent
         local index = (agent % #center_proxy_servers)+1 
         local center_proxy_server_id = center_proxy_servers[index]
         skynet.send(agent, "lua", "accept", id, protocol, addr, {
-            debug = CMD.debug,
+            debug = handler.debug,
             center_proxy_server_id = center_proxy_server_id,
         })
     end)
 end
 
-function CMD.query_agent(agent)
-    return CMD.agents[agent]
+function handler.query_agent(agent)
+    return agents[agent]
 end
 
-function CMD.register_agent(agent)
-    CMD.agents[agent] = agent
-end
-
-function CMD.kick_agent(agent)
-    CMD.agents[agent] = nil
+function handler.kick_agent(agent)
+    agents[agent] = nil
 end
 
 local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            local f = CMD[cmd]
+            local f = handler[cmd]
             assert(f)
             if session == 0 then
                 f(...)
@@ -100,7 +89,7 @@ local function dispatch()
             end
         end
     )
-    skynet.register(CMD.servername)
+    skynet.register(handler.servername)
 end
 
 skynet.start(dispatch)

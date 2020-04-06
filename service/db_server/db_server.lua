@@ -124,7 +124,7 @@ end
 -- 记录日志
 function handler.writeLog(content)
     local data = cjson.decode(content)
-    utils.dump(data, "数据库·请求日志）")
+    -- utils.dump(data, "数据库·请求日志）")
 
     local sql = [[INSERT INTO reqLog (clientIp, content, updateTime) VALUES (?,?,?);]]
     local now = os.date("%Y-%m-%d %H:%M:%S", os.time())

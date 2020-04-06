@@ -87,7 +87,7 @@ function handler.message(fd, msg)
         ver = ver,
         checkCode = checkCode,
         clientId = clientId,
-        center_agent = skynet.self(),
+        agent = skynet.self(),
     }
 
     -- 内容
@@ -95,16 +95,12 @@ function handler.message(fd, msg)
         data = pk:data()
     }
 
-    if handler.debug then
-        utils.dump(head, handler.servername .. ".head")
-    end
-
-    -- 转发到对应服务器
+    -- 转发消息
     local service = backendRoute[head.mid]
     if service == nil then
         local errmsg = "unknown " .. handler.servername .. " mid=" .. tostring(head.mid) .. " command" 
         skynet.error(errmsg)
-        return nil, errmsg 
+        return
     end
 
     skyhelper.send(service.name, "dispatch_send_message", head, content)
@@ -144,19 +140,6 @@ skynet.init(
 )
 
 local function dispatch()
-    -- skynet.dispatch(
-    --     "lua",
-    --     function(session, address, fd, protocol, addr, center_server)
-    --         handler.center_server = center_server
-    --         -- skynet.error("accept fd=" .. fd .. " addr=" .. skynet.address(address) .. " addr=" .. addr)
-    --         skynet.error("accept fd=" .. fd .. " addr=" .. addr)
-    --         local ok, err = websocket.accept(fd, handler, protocol, addr)
-    --         if err then
-    --             skynet.error(err)
-    --         end
-    --     end
-    -- )
-
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)

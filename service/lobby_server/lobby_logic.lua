@@ -40,7 +40,7 @@ function logic.onReqRegist(head, content)
     end
 
     local result =  skynet_db_call("register_account", account, password)
-    utils.dump(result, "result")
+    -- utils.dump(result, "result")
 
     if not result then
         return {
@@ -77,7 +77,7 @@ function logic.onReqLogin(head, content)
     end
 
     local result = skynet_db_call("login_account", account, password)
-    utils.dump(result, "result")
+    -- utils.dump(result, "result")
 
     if not result then
         return {
