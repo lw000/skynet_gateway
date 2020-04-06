@@ -12,61 +12,74 @@ skyent websocket网关服务
 # 代码结构
 #### .
 #### ├── center_server
-#### │   ├── agent_.lua
-#### │   ├── center_server_.lua
-#### │   ├── center_server.lua
-#### │   ├── logic.lua
-#### │   ├── manager.lua
-#### │   └── route_map.lua
+#### │   ├── agent.lua
+#### │   ├── center_logic.lua
+#### │   ├── center_route.lua
+#### │   └── center_server.lua
+#### ├── chat_server
+#### │   ├── chat_server.lua
+#### │   └── service
+#### │       ├── chat_logic_func.lua
+#### │       └── chat_logic_server.lua
 #### ├── common
-#### │   ├── core.lua
-#### │   ├── dump.lua
-#### │   ├── export.lua
-#### │   ├── function.lua
-#### │   ├── trackback.lua
-#### │   └── utils.lua
+#### │   ├── function.lua
+#### │   ├── trackback.lua
+#### │   └── utils.lua
 #### ├── config
-#### │   └── config.lua
-#### ├── core
-#### │   └── define.lua
+#### │   └── config.lua
 #### ├── db_server
-#### │   ├── database
-#### │   │   └── database.lua
-#### │   ├── db_server.lua
-#### │   ├── logic.lua
-#### │   └── manager.lua
+#### │   ├── database
+#### │   │   └── database.lua
+#### │   ├── db_server.lua
+#### │   └── service
+#### │       └── db_logic_server.lua
 #### ├── gate_server
-#### │   ├── agent.lua
-#### │   ├── backend
-#### │   │   └── backend.lua
-#### │   └── gate_server.lua
-#### ├── logon_server
-#### │   ├── logic.lua
-#### │   ├── logon_server.lua
-#### │   └── manager.lua
+#### │   ├── agent.lua
+#### │   ├── gate_server.lua
+#### │   ├── global.lua
+#### │   └── proxy
+#### │       ├── center_proxy.lua
+#### │       └── master_proxy.lua
+#### ├── lobby_server
+#### │   ├── lobby_logic.lua
+#### │   └── lobby_server.lua
 #### ├── main_center.lua
-#### ├── main_client.lua
 #### ├── main_gate.lua
 #### ├── main.lua
+#### ├── main_master.lua
+#### ├── main_robot.lua
+#### ├── master_server
+#### │   ├── master_service.lua
+#### │   └── proxy
+#### │       └── master_proxy.lua
 #### ├── network
-#### │   ├── packet.lua
-#### │   └── ws.lua
+#### │   ├── packet.lua
+#### │   ├── wsext.lua
+#### │   └── ws.lua
 #### ├── proto_map
-#### │   └── proto_map.lua
+#### │   ├── proto_func.lua
+#### │   └── proto_map.lua
 #### ├── protos
-#### │   ├── build.sh
-#### │   ├── chat.pb
-#### │   ├── chat.proto
-#### │   ├── lobby.pb
-#### │   ├── lobby.proto
-#### │   ├── service.pb
-#### │   └── service.proto
+#### │   ├── build.sh
+#### │   ├── chat.pb
+#### │   ├── chat.proto
+#### │   ├── lobby.pb
+#### │   ├── lobby.proto
+#### │   ├── service.pb
+#### │   └── service.proto
 #### ├── redis_server
-#### │   ├── logic.lua
-#### │   ├── manager.lua
-#### │   └── redis_server.lua
+#### │   ├── logic.lua
+#### │   ├── manager.lua
+#### │   └── redis_server.lua
+#### ├── robot_server
+#### │   └── robot_server.lua
+#### ├── service_config
+#### │   ├── service_cmd.lua
+#### │   └── service_type.lua
+#### ├── sharelib
+#### │   ├── hub.lua
+#### │   ├── logger.lua
+#### │   └── timer.lua
 #### ├── skycommon
-#### │   └── helper.lua
-#### ├── testpk.lua
-#### └── ws_client
-####     └── ws_client.lua
+#### │   └── helper.lua
+#### └── testpk.lua
