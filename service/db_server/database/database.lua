@@ -1,5 +1,6 @@
 local skynet = require("skynet")
 local mysql = require("skynet.db.mysql")
+local utils = require("utils")
 
 -- conf = {
 --     host = "",      -- 主机地址
@@ -47,16 +48,22 @@ end
 
 -- 查询sql
 function database.query(dbconn, sql)
+    skynet.error("database.query:", sql)
+
     local results = dbconn:query(sql)
     if results.err then
         skynet.error("error: sql execute, " .. results.err)
         return nil, results.err
     end
+    
+    -- utils.dump(results)
+
     return results
 end
 
 -- 执行sql
 function database.execute(dbconn, sql, ...)
+    skynet.error("database.execute:", sql, ...)
     local stmt = dbconn:prepare(sql)
     if stmt.err then
         skynet.error("error: sql prepare, " .. stmt.err)
@@ -68,6 +75,9 @@ function database.execute(dbconn, sql, ...)
         skynet.error("error: sql execute, " .. results.err)
         return nil, results.err
     end
+    
+    -- utils.dump(results)
+
     return results
 end
 

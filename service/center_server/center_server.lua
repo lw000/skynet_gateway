@@ -15,50 +15,49 @@ local methods = {
     [CENTER_CMD.SUB.UNREGIST] = {func=logic.onUnregist, desc="服务卸载"}
 }
 
-local CMD = {
+local handler = {
     servertype = SERVICE_TYPE.CENTER.ID,
     servername = SERVICE_TYPE.CENTER.NAME,
     debug = false,
-    port = 8081,
     protocol = "ws",
 }
 
-function CMD.start(content)
-    CMD.debug = content.debug
-    CMD.port = content.port
-    assert(CMD.port > 0)
+function handler.start(content)
+    handler.debug = content.debug
+    handler.port = content.port
+    assert(handler.port > 0)
 
-    CMD.listen()
+    handler.listen(content.port)
 
     return 0
 end
 
-function CMD.stop()
+function handler.stop()
 
 end
 
-function CMD.listen()
-    local fd = socket.listen("0.0.0.0", CMD.port)
+function handler.listen(port)
+    local fd = socket.listen("0.0.0.0", port)
 
-    skynet.error(string.format("ws listen port:" .. CMD.port))
+    skynet.error(string.format("ws listen port:" .. port))
     
     socket.start(fd, function(id, addr)
         local agent = skynet.newservice("service/center_agent", skynet.self())
-        skynet.send(agent, "lua", "accept", id, CMD.protocol, addr, {
-            debug = CMD.debug,
+        skynet.send(agent, "lua", "accept", id, handler.protocol, addr, {
+            debug = handler.debug,
         })
     end)
 end
 
-function CMD.dispatch_send_message(head, content)
-    if CMD.debug then
-        utils.dump(head, CMD.servername .. ".head")
+function handler.dispatch_send_message(head, content)
+    if handler.debug then
+        utils.dump(head, handler.servername .. ".head")
     end
 
     local method = methods[head.sid]
     assert(method ~= nil)
     if method == nil then
-        local errmsg = "unknown " .. CMD.servername .. " [sid=" .. tostring(head.sid) .. "] command"
+        local errmsg = "unknown " .. handler.servername .. " [sid=" .. tostring(head.sid) .. "] command"
         skynet.error(errmsg)
         return nil, errmsg
     end
@@ -72,11 +71,11 @@ function CMD.dispatch_send_message(head, content)
     skyhelper.send(head.center_agent, "send_client_message", head, ack)
 end
 
-function CMD.register_service(head, content)
+function handler.register_service(head, content)
 
 end
 
-function CMD.unregister_service(head, content)
+function handler.unregister_service(head, content)
 
 end
 
@@ -84,8 +83,8 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            -- skynet.error(CMD.servername .. " recved:",session, address, cmd, ...)
-            local f = CMD[cmd]
+            -- skynet.error(handler.servername .. " recved:",session, address, cmd, ...)
+            local f = handler[cmd]
             assert(f)
             if session == 0 then
                 f(...)
@@ -94,7 +93,7 @@ local function dispatch()
             end
         end
     )
-    skynet.register(CMD.servername)
+    skynet.register(handler.servername)
 end
 
 skynet.start(dispatch)

@@ -38,7 +38,8 @@ function CMD.start(content)
     return 0
 end
 
-function CMD.stop() 
+function CMD.stop()
+    skynet.exit();
     return 0
 end
 

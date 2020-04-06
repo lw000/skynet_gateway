@@ -23,6 +23,7 @@ end
 
 function CMD.stop() 
     mgr.stop()
+    skynet.exit();
     return 0
 end
 

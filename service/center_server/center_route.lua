@@ -1,8 +1,8 @@
-require("service_cmd")
-require("service_type")
+require("service_config.service_cmd")
+require("service_config.service_type")
 
 -- 中心F路由转发映射表
-local Route = 
+local BackendRoute = 
 {
     [CENTER_CMD.MDM] = {name = SERVICE_TYPE.CENTER.NAME, desc = "中心服务"},
     [LOBBY_CMD.MDM] = {name = SERVICE_TYPE.LOBBY.NAME, desc = "大厅服务"},
@@ -12,4 +12,4 @@ local Route =
     [CHAT_CMD.MDM] = {name = SERVICE_TYPE.CHAT.NAME, desc = "聊天服务"},
 }
 
-return Route
+return BackendRoute

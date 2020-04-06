@@ -1,13 +1,13 @@
 local skynet = require("skynet")
 local websocket = require("http.websocket")
 local packet = require("packet")
-local route = require("service.center_route")
-local skyhelper = require("helper")
+local backendRoute = require("center_server.center_route")
+local skyhelper = require("skycommon.helper")
 local logger = require("logger")
 local utils = require("utils")
 require("skynet.manager")
-require("service_type")
-require("proto_map")
+require("service_config.service_type")
+require("proto_map.proto_map")
 
 local center = ...
 
@@ -100,7 +100,7 @@ function handler.message(fd, msg)
     end
 
     -- 转发到对应服务器
-    local service = route[head.mid]
+    local service = backendRoute[head.mid]
     if service == nil then
         local errmsg = "unknown " .. handler.servername .. " mid=" .. tostring(head.mid) .. " command" 
         skynet.error(errmsg)

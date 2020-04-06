@@ -10,7 +10,7 @@ require("service_type")
 require("proto_map")
 require("proto_func")
 
-local CMD = {
+local handler = {
     scheme = "ws",
     host = "127.0.0.1",
     tick_s = 5,
@@ -18,100 +18,100 @@ local CMD = {
     client = ws:new()
 }
 
-function CMD.start(scheme, host, content)
-    CMD.account = content.account
-    CMD.password = content.password
-    CMD.scheme = scheme
-    CMD.host = host
-    CMD.client:handleMessage(CMD.message)
-    CMD.client:handleError(CMD.error)
-    local ok, err = CMD.client:connect(scheme, host)
+function handler.start(scheme, host, content)
+    handler.account = content.account
+    handler.password = content.password
+    handler.scheme = scheme
+    handler.host = host
+    handler.client:handleMessage(handler.message)
+    handler.client:handleError(handler.error)
+    local ok, err = handler.client:connect(scheme, host)
     if err then
         return 1, "connect fail"
     end
 
     -- 心跳
-    timer.runEvery(CMD.tick_s, CMD.tick)
+    timer.runEvery(handler.tick_s, handler.tick)
 
     -- 连接检查
-    timer.runEvery(CMD.keepalive_s, CMD.keepalive)
+    timer.runEvery(handler.keepalive_s, handler.keepalive)
 
     -- 注册账号，登录账号
-    skynet.fork(CMD.regist)
+    skynet.fork(handler.regist)
 
     return 0
 end
 
-function CMD.stop()
+function handler.stop()
     timer.stop()
 end
 
 -- 心跳
-function CMD.tick()
-    if CMD.client:open() then
-        CMD.send(0x0000, 0x0000, nil, nil)
-        -- CMD.client:ping()
+function handler.tick()
+    if handler.client:open() then
+        handler.send(0x0000, 0x0000, nil, nil)
+        -- handler.client:ping()
     end
 end
 
 -- 连接检查
-function CMD.keepalive()
-    local open = CMD.client:open()
+function handler.keepalive()
+    local open = handler.client:open()
     if not open then
         skynet.error("reconnect to server")
-        local ok, err = CMD.client:connect(CMD.scheme, CMD.host)
+        local ok, err = handler.client:connect(handler.scheme, handler.host)
         if err ~= nil then
             skynet.error(ok, err)
         end
-        open = CMD.client:open()
+        open = handler.client:open()
         if open then
-            CMD.regist()
+            handler.regist()
         end
     end
 end
 
 -- 注册账号
-function CMD.regist()
+function handler.regist()
     local reqLogin = functor.pack_ReqRegist(
     {
-        account = CMD.account,
-        password = CMD.password,
+        account = handler.account,
+        password = handler.password,
     })
 
-    CMD.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(msg)
+    handler.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.REGIST, reqLogin, function(msg)
         local data = functor.unpack_AckRegist(msg)
         utils.dump(data, "AckRegist")
 
-        CMD.logon()
+        handler.logon()
     end)
 end
 
 -- 登录账号
-function CMD.logon()
+function handler.logon()
     local reqLogin = functor.pack_ReqLogin(
     {
-        account = CMD.account,
-        password = CMD.password,
+        account = handler.account,
+        password = handler.password,
     })
 
-    CMD.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(msg)
+    handler.send(LOBBY_CMD.MDM, LOBBY_CMD.SUB.LOGON, reqLogin, function(msg)
         local data = functor.unpack_AckLogin(msg)
         utils.dump(data, "AckLogin")
         
         -- 测试发送消息
-        skynet.fork(CMD.chat, data.userInfo.userId)
+        skynet.fork(handler.chat, data.userInfo.userId)
     end)
 end
 
-function CMD.chat(userId)
-    while CMD.client:open() do
+function handler.chat(userId)
+    while handler.client:open() do
         local chatMessage = functor.pack_ChatMessage(
         {
             from = userId,
             to = 11,
             content = "hello" .. userId
         })
-        CMD.send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(msg)
+        handler.send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(msg)
             local data = functor.unpack_AckChatMessage(msg)
             -- utils.dump(data, "AckChatMessage")
         end)
@@ -119,12 +119,12 @@ function CMD.chat(userId)
     end
 end
 
-function CMD.sendBuff(data)
-    CMD.client:send(data)
+function handler.sendBuff(data)
+    handler.client:send(data)
 end
 
-function CMD.sendWithClientId(mid, sid, clientId, data, fn)
-    if not CMD.client:open() then
+function handler.sendWithClientId(mid, sid, clientId, data, fn)
+    if not handler.client:open() then
         skynet.error("network is disconnect")
         return
     end
@@ -140,14 +140,14 @@ function CMD.sendWithClientId(mid, sid, clientId, data, fn)
         hub.register(mid, sid, fn)
     end
 
-    CMD.sendBuff(pk:data())
+    handler.sendBuff(pk:data())
 end
 
-function CMD.send(mid, sid, data, fn)
-    return CMD.sendWithClientId(mid, sid, 0, data, fn)
+function handler.send(mid, sid, data, fn)
+    return handler.sendWithClientId(mid, sid, 0, data, fn)
 end
 
-function CMD.message(msg)
+function handler.message(msg)
     local pk = packet:new()
     pk:unpack(msg)
     local mid = pk:mid()
@@ -155,7 +155,7 @@ function CMD.message(msg)
     hub.dispatchMessage(mid, sid, pk:data())
 end
 
-function CMD.error(err)
+function handler.error(err)
     skynet.error(err)
 end
 
@@ -169,7 +169,7 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            local f = CMD[cmd]
+            local f = handler[cmd]
             assert(f)
             if session == 0 then
                 f(...)
@@ -178,7 +178,6 @@ local function dispatch()
             end
         end
     )
-    
 end
 
 skynet.start(dispatch)

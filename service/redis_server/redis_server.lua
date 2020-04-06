@@ -54,6 +54,7 @@ function CMD.stop()
 	CMD.redisConn:disconnect()
 	CMD.redisdb = nil
 	
+	skynet.exit();
     return 0
 end
 
