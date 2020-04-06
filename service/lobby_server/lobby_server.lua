@@ -5,35 +5,36 @@ local utils = require("utils")
 require("skynet.manager")
 require("service_type")
 
-local CMD = {
+local handler = {
 	servicetype = SERVICE_TYPE.LOBBY.ID, 	-- 服务类型
     servername = SERVICE_TYPE.LOBBY.NAME,  	-- 服务名
     debug = false,
 }
 
-function CMD.start(content)
+function handler.start(content)
+    assert(content ~= nil, "content is nil")
 	math.randomseed(os.time())
 
-    CMD.debug = content.debug
+    handler.debug = content.debug
 
-	mgr.start(CMD.servername, CMD.debug)
+	mgr.start(handler.servername, handler.debug)
 
     return 0
 end
 
-function CMD.stop() 
+function handler.stop() 
     mgr.stop()
     skynet.exit();
     return 0
 end
 
 -- 登录服·send消息处理接口
-function CMD.dispatch_send_message(head, content)
+function handler.dispatch_send_message(head, content)
 	mgr.dispatch(head, content)
 end
 
 -- 登录服·call消息处理接口
-function CMD.dispatch_call_message(head, content)
+function handler.dispatch_call_message(head, content)
 	return mgr.dispatch(head, content)
 end
 
@@ -41,7 +42,7 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            local f = CMD[cmd]
+            local f = handler[cmd]
             assert(f)
             if session == 0 then
                 f(...)
@@ -50,7 +51,7 @@ local function dispatch()
             end
         end
     )
-    skynet.register(CMD.servername)
+    skynet.register(handler.servername)
 end
 
 skynet.start(dispatch)

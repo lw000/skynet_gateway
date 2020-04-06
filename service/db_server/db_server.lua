@@ -21,7 +21,7 @@ local handler = {
 
 -- 服务启动·接口
 function handler.start(conf)
-    assert(conf ~= nil) 
+    assert(conf ~= nil, "conf is nil")
     handler.debug = conf.debug
 
     for i=1, 10 do

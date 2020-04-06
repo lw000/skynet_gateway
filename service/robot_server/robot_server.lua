@@ -113,7 +113,7 @@ function handler.chat(userId)
         })
         handler.send(CHAT_CMD.MDM, CHAT_CMD.SUB.CHAT, chatMessage, function(msg)
             local data = functor.unpack_AckChatMessage(msg)
-            -- utils.dump(data, "AckChatMessage")
+            utils.dump(data, "AckChatMessage")
         end)
         skynet.sleep(100)
     end

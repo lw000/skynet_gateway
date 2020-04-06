@@ -7,29 +7,34 @@ require("service_type")
 
 local chat_logic_servers = {}  -- 服务ID
 
-local function dispatch_send_message(head, content)
-    local index = (head.center_agent % #chat_logic_servers)+1
+local function get_chat_logic_servers(agent)
+    local index = (agent % #chat_logic_servers)+1
     -- skynet.error("chat_logic_servers index:", index)
     local chat_logic_server = chat_logic_servers[index]
-    skyhelper.send(chat_logic_server, "dispatch_send_message", head, content)
+    return chat_logic_server
 end
 
-local CMD = {
+local function dispatch_send_message(head, content)
+    skyhelper.send(get_chat_logic_servers(head.center_agent), "dispatch_send_message", head, content)
+end
+
+local handler = {
     servicetype = SERVICE_TYPE.CHAT.ID, 	-- 服务类型
 	servername = SERVICE_TYPE.CHAT.NAME,  	-- 服务名
     debug = false,
 }
 
-function CMD.start(content)
+function handler.start(content)
+    assert(content ~= nil, "content is nil")
     math.randomseed(os.time())
 
-    CMD.debug = content.debug
+    handler.debug = content.debug
 
     for i=1, 10 do
         local chat_logic_server = skynet.newservice("service/chat_logic_server")
         chat_logic_servers[i] = chat_logic_server
         skynet.call(chat_logic_server, "lua", "start", {
-            debug = CMD.debug,
+            debug = handler.debug,
             chat_server_id = skynet.self(),
         })
     end
@@ -38,13 +43,15 @@ function CMD.start(content)
     return 0
 end
 
-function CMD.stop()
+function handler.stop()
     skynet.exit();
     return 0
 end
 
--- 登录服·消息处理接口
-function CMD.dispatch_send_message(head, content)
+-- 聊天服·消息处理接口
+function handler.dispatch_send_message(head, content)
+    -- utils.dump(head, "head")
+    -- utils.dump(content, "content")
     return dispatch_send_message(head, content)
 end
 
@@ -52,7 +59,7 @@ local function dispatch()
     skynet.dispatch(
         "lua",
         function(session, address, cmd, ...)
-            local f = CMD[cmd]
+            local f = handler[cmd]
             assert(f)
             if session == 0 then
                 f(...)
@@ -61,7 +68,7 @@ local function dispatch()
             end
         end
     )
-    skynet.register(CMD.servername)
+    skynet.register(handler.servername)
 end
 
 skynet.start(dispatch)

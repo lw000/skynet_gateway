@@ -12,7 +12,7 @@ local msg_index = 0
 -- 聊天信息
 function logic.onChat(head, content)
     -- utils.dump(head, "head")
-    -- utils.dump(content, "chatMessage")
+    utils.dump(content, "chatMessage")
     msg_index = msg_index + 1
     return {
         from = content.from,
